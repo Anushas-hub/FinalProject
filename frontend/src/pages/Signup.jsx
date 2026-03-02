@@ -1,7 +1,50 @@
 import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
 
 export default function Signup() {
   const navigate = useNavigate();
+
+  // 🔹 State
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState(""); // ✅ Added
+  const [role, setRole] = useState("");
+
+  // 🔹 Signup handler
+  const handleSignup = async () => {
+    // ✅ Password validation
+    if (password !== confirmPassword) {
+      alert("Passwords do not match ❌");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/signup/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          role,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Account created successfully");
+        navigate("/login");
+      } else {
+        alert(data.error || "Signup failed");
+      }
+    } catch (err) {
+      alert("Server not reachable");
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -16,27 +59,48 @@ export default function Signup() {
           type="text"
           placeholder="Username"
           style={styles.input}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
 
         <input
           type="email"
           placeholder="Email"
           style={styles.input}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
           type="password"
           placeholder="Password"
           style={styles.input}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
 
-        <select style={styles.input}>
+        {/* ✅ Confirm Password Field */}
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          style={styles.input}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+
+        <select
+          style={styles.input}
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+        >
           <option value="">Select Role</option>
           <option value="student">Student</option>
           <option value="author">Author</option>
         </select>
 
-        <button style={styles.primaryBtn}>Create Account</button>
+        <button style={styles.primaryBtn} onClick={handleSignup}>
+          Create Account
+        </button>
 
         <button style={styles.googleBtn}>
           Continue with Google

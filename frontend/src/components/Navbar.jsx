@@ -9,7 +9,11 @@ export default function Navbar() {
         <li><Link to="/" style={styles.link}>Home</Link></li>
         <li><Link to="/materials" style={styles.link}>Study Material</Link></li>
         <li><Link to="/pyq" style={styles.link}>Previous Year Question Papers</Link></li>
-        <li><Link to="/login" style={styles.login}>Login / Signup</Link></li>
+        <li>
+          <Link to="/login" style={styles.loginBtn}>
+            Login / Signup
+          </Link>
+        </li>
       </ul>
     </nav>
   );
@@ -27,11 +31,12 @@ const styles = {
     position: "sticky",
     top: 0,
     zIndex: 100,
+    fontFamily: "Arial, sans-serif",
   },
   logo: {
     fontSize: "26px",
     fontWeight: "700",
-    color: "#2e7d32",
+    color: "#2563eb", // blue theme
   },
   menu: {
     listStyle: "none",
@@ -41,15 +46,17 @@ const styles = {
   },
   link: {
     textDecoration: "none",
-    color: "#444",
+    color: "#374151",
     fontSize: "16px",
+    fontWeight: "500",
   },
-  login: {
+  loginBtn: {
     textDecoration: "none",
-    padding: "8px 18px",
+    padding: "8px 20px",
     borderRadius: "20px",
-    background: "#2e7d32",
+    background: "#2563eb",
     color: "#fff",
-    fontSize: "15px",
+    fontSize: "14px",
+    fontWeight: "500",
   },
 };

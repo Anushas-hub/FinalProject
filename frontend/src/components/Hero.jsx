@@ -11,7 +11,7 @@ export default function Hero() {
 
 const styles = {
   hero: {
-    height: "80vh",
+    height: "60vh", // reduced height
     background: "linear-gradient(120deg, #e8f5e9, #e0f2f1)",
     display: "flex",
     justifyContent: "center",
@@ -21,12 +21,12 @@ const styles = {
     textAlign: "center",
   },
   title: {
-    fontSize: "64px",
-    color: "#1b5e20",
+    fontSize: "60px",
+    color: "#264ed2",
     marginBottom: "10px",
   },
   subtitle: {
     fontSize: "22px",
-    color: "#555",
+    color: "#121825",
   },
 };
