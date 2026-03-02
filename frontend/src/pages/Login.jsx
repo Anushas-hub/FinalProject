@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const message = location.state?.message;
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -17,6 +20,7 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem("user", username);
         alert("Login Successful ✅");
         navigate("/");
       } else {
@@ -35,6 +39,8 @@ export default function Login() {
 
       <div style={styles.card}>
         <h2 style={styles.title}>Login</h2>
+
+        {message && <p style={styles.message}>{message}</p>}
 
         <input
           type="text"
@@ -94,8 +100,12 @@ const styles = {
     boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
     textAlign: "center",
   },
-  title: {
-    marginBottom: "20px",
+  title: { marginBottom: "20px" },
+  message: {
+    fontSize: "14px",
+    marginBottom: "15px",
+    color: "#1e3a8a",
+    fontWeight: "500",
   },
   input: {
     width: "100%",
@@ -112,15 +122,7 @@ const styles = {
     border: "none",
     borderRadius: "6px",
     cursor: "pointer",
-    marginBottom: "10px",
   },
-  switchText: {
-    marginTop: "15px",
-    fontSize: "14px",
-  },
-  link: {
-    color: "#2563eb",
-    textDecoration: "none",
-    fontWeight: "500",
-  },
+  switchText: { marginTop: "15px", fontSize: "14px" },
+  link: { color: "#2563eb", textDecoration: "none", fontWeight: "500" },
 };

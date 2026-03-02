@@ -5,6 +5,7 @@ import Connect from "./pages/Connect";
 import Reference from "./pages/Reference";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ExploreCertification from "./pages/ExploreCertification";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/reference" element={<Reference />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/explore-certification" element={<ExploreCertification />} />
     </Routes>
   );
 }

@@ -1,8 +1,11 @@
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Footer from "../components/Footer";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const navigate = useNavigate();
+
   const handleMouseEnter = (e) => {
     e.currentTarget.style.transform = "scale(1.04)";
     e.currentTarget.style.boxShadow =
@@ -13,6 +16,21 @@ export default function Home() {
     e.currentTarget.style.transform = "scale(1)";
     e.currentTarget.style.boxShadow =
       "0 8px 20px rgba(0,0,0,0.05)";
+  };
+
+  const handleExploreClick = () => {
+    const user = localStorage.getItem("user");
+
+    if (user) {
+      navigate("/explore-certification");
+    } else {
+      navigate("/login", {
+        state: {
+          message:
+            "To complete the course and quizzes for certification, please login or sign up. We require your details to generate your certificate.",
+        },
+      });
+    }
   };
 
   return (
@@ -91,6 +109,20 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Certification Section (NEW – nothing else changed) */}
+      <section style={styles.certSection}>
+        <h2 style={styles.certTitle}>
+          Get Certified in Your Preferred Topics
+        </h2>
+
+        <button
+          style={styles.certButton}
+          onClick={handleExploreClick}
+        >
+          Click to Explore
+        </button>
+      </section>
+
       <Footer />
     </div>
   );
@@ -100,12 +132,11 @@ const styles = {
   page: {
     fontFamily: "Arial, sans-serif",
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #eef2ff, #ecfdf5)", // single calm bg
+    background: "linear-gradient(135deg, #eef2ff, #ecfdf5)",
   },
 
-  /* SEARCH */
   searchSection: {
-    padding: "50px 20px 30px 20px", // reduced bottom gap
+    padding: "50px 20px 30px 20px",
     textAlign: "center",
   },
 
@@ -144,9 +175,8 @@ const styles = {
     cursor: "pointer",
   },
 
-  /* ABOUT */
   aboutSection: {
-    padding: "30px 20px 60px 20px", // reduced top gap
+    padding: "30px 20px 60px 20px",
   },
 
   cardsContainer: {
@@ -178,5 +208,30 @@ const styles = {
     fontSize: "14px",
     color: "#475569",
     lineHeight: "1.6",
+  },
+
+  /* NEW CERTIFICATION STYLES */
+  certSection: {
+    textAlign: "center",
+    padding: "0px 20px 60px 20px",
+  },
+
+  certTitle: {
+    fontSize: "24px",
+    fontWeight: "700",
+    marginBottom: "20px",
+    color: "#1e293b",
+  },
+
+  certButton: {
+    padding: "12px 40px",
+    borderRadius: "30px",
+    border: "none",
+    background: "#2563eb",
+    color: "#ffffff",
+    fontSize: "15px",
+    fontWeight: "500",
+    cursor: "pointer",
+    transition: "0.3s",
   },
 };
