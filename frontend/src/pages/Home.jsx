@@ -4,9 +4,9 @@ import Footer from "../components/Footer";
 
 export default function Home() {
   const handleMouseEnter = (e) => {
-    e.currentTarget.style.transform = "scale(1.05)";
+    e.currentTarget.style.transform = "scale(1.04)";
     e.currentTarget.style.boxShadow =
-      "0 12px 30px rgba(0,0,0,0.12)";
+      "0 15px 35px rgba(0,0,0,0.08)";
   };
 
   const handleMouseLeave = (e) => {
@@ -20,7 +20,7 @@ export default function Home() {
       <Navbar />
       <Hero />
 
-      {/* 🔍 Search Section */}
+      {/* Search Section */}
       <section style={styles.searchSection}>
         <h2 style={styles.searchTitle}>Let's Start Learning</h2>
 
@@ -34,7 +34,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 📘 About SmartStudy Section */}
+      {/* About Section */}
       <section style={styles.aboutSection}>
         <div style={styles.cardsContainer}>
 
@@ -45,9 +45,8 @@ export default function Home() {
           >
             <h3 style={styles.cardTitle}>Purpose</h3>
             <p style={styles.cardText}>
-              SmartStudy is built to simplify learning by providing
-              structured resources, past papers, and collaborative tools
-              for students.
+              SmartStudy simplifies learning through structured notes,
+              PYQs, and collaboration tools for students.
             </p>
           </div>
 
@@ -60,9 +59,7 @@ export default function Home() {
               Syllabus Aligned Notes (Mumbai University)
             </h3>
             <p style={styles.cardText}>
-              Bachelor of Science in Information Technology and
-              Bachelor of Science in Computer Science courses with
-              syllabus-focused notes.
+              B.Sc IT & B.Sc CS courses with syllabus-focused notes.
             </p>
           </div>
 
@@ -73,8 +70,7 @@ export default function Home() {
           >
             <h3 style={styles.cardTitle}>Subject Based Quizzes</h3>
             <p style={styles.cardText}>
-              Practice with topic-wise quizzes to strengthen concepts
-              and prepare effectively for exams.
+              Topic-wise quizzes to improve understanding and exam preparation.
             </p>
           </div>
 
@@ -87,8 +83,8 @@ export default function Home() {
               Student–Author Collaboration
             </h3>
             <p style={styles.cardText}>
-              Authors can upload notes and Q&A while students can ask
-              doubts, creating an interactive academic ecosystem.
+              Authors upload notes & Q&A, students ask doubts —
+              interactive academic ecosystem.
             </p>
           </div>
 
@@ -103,37 +99,36 @@ export default function Home() {
 const styles = {
   page: {
     fontFamily: "Arial, sans-serif",
-    background: "#d9deeb",
     minHeight: "100vh",
+    background: "linear-gradient(135deg, #eef2ff, #ecfdf5)", // single calm bg
   },
 
-  /* SEARCH SECTION */
+  /* SEARCH */
   searchSection: {
-    padding: "80px 20px",
+    padding: "50px 20px 30px 20px", // reduced bottom gap
     textAlign: "center",
-    background: "#f4f6fb",
   },
 
   searchTitle: {
-    fontSize: "32px",
+    fontSize: "30px",
     fontWeight: "700",
-    marginBottom: "30px",
-    color: "#1f2937",
+    marginBottom: "25px",
+    color: "#1e293b",
   },
 
   searchWrapper: {
-    maxWidth: "900px",
+    maxWidth: "850px",
     margin: "0 auto",
     display: "flex",
     borderRadius: "50px",
     overflow: "hidden",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
     background: "#ffffff",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
   },
 
   searchInput: {
     flex: 1,
-    padding: "18px 25px",
+    padding: "16px 25px",
     border: "none",
     outline: "none",
     fontSize: "16px",
@@ -149,26 +144,26 @@ const styles = {
     cursor: "pointer",
   },
 
-  /* ABOUT SECTION */
+  /* ABOUT */
   aboutSection: {
-    padding: "80px 20px",
-    background: "#ffffff",
+    padding: "30px 20px 60px 20px", // reduced top gap
   },
 
   cardsContainer: {
     maxWidth: "1000px",
     margin: "0 auto",
     display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)", // fixed 2 per row
-    gap: "40px",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: "35px",
   },
 
   card: {
-    background: "#f4f6fb",
-    padding: "25px",
-    borderRadius: "12px",
+    background: "rgba(255,255,255,0.75)",
+    backdropFilter: "blur(8px)",
+    padding: "30px",
+    borderRadius: "14px",
     boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
-    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    transition: "all 0.3s ease",
     cursor: "pointer",
   },
 
@@ -176,12 +171,12 @@ const styles = {
     fontSize: "18px",
     fontWeight: "700",
     marginBottom: "12px",
-    color: "#2563eb",
+    color: "#1e3a8a",
   },
 
   cardText: {
     fontSize: "14px",
-    color: "#374151",
+    color: "#475569",
     lineHeight: "1.6",
   },
 };
