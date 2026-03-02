@@ -19,9 +19,9 @@ export default function Footer() {
 const styles = {
   footer: {
     background: "#ffffff",
-    padding: "50px 20px 30px",
+    padding: "40px 20px 25px",
     textAlign: "center",
-    marginTop: "60px",
+    marginTop: "30px", // reduced gap
     boxShadow: "0 -2px 8px rgba(0,0,0,0.05)",
     fontFamily: "Arial, sans-serif",
   },
@@ -30,7 +30,7 @@ const styles = {
     justifyContent: "center",
     gap: "50px",
     fontSize: "16px",
-    marginBottom: "20px",
+    marginBottom: "15px",
   },
   link: {
     textDecoration: "none",
@@ -38,7 +38,7 @@ const styles = {
     fontWeight: "500",
   },
   bottom: {
-    fontSize: "16px",
+    fontSize: "15px",
     color: "#222a39",
   },
 };

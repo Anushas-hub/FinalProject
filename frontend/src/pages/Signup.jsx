@@ -4,16 +4,13 @@ import { useState } from "react";
 export default function Signup() {
   const navigate = useNavigate();
 
-  // 🔹 State
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState(""); // ✅ Added
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("");
 
-  // 🔹 Signup handler
   const handleSignup = async () => {
-    // ✅ Password validation
     if (password !== confirmPassword) {
       alert("Passwords do not match ❌");
       return;
@@ -36,13 +33,18 @@ export default function Signup() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Account created successfully");
-        navigate("/login");
+        // ✅ AUTO LOGIN AFTER SIGNUP
+        localStorage.setItem("user", username);
+
+        alert("Account created successfully ✅");
+
+        // ✅ DIRECT HOME
+        navigate("/");
       } else {
-        alert(data.error || "Signup failed");
+        alert(data.error || "User already exists ❌");
       }
     } catch (err) {
-      alert("Server not reachable");
+      alert("Server not reachable ❌");
     }
   };
 
@@ -79,7 +81,6 @@ export default function Signup() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* ✅ Confirm Password Field */}
         <input
           type="password"
           placeholder="Confirm Password"

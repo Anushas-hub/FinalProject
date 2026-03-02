@@ -9,13 +9,13 @@ export default function Home() {
   const handleMouseEnter = (e) => {
     e.currentTarget.style.transform = "scale(1.04)";
     e.currentTarget.style.boxShadow =
-      "0 15px 35px rgba(0,0,0,0.08)";
+      "0 20px 40px rgba(0,0,0,0.08)";
   };
 
   const handleMouseLeave = (e) => {
     e.currentTarget.style.transform = "scale(1)";
     e.currentTarget.style.boxShadow =
-      "0 8px 20px rgba(0,0,0,0.05)";
+      "0 10px 25px rgba(0,0,0,0.05)";
   };
 
   const handleExploreClick = () => {
@@ -55,72 +55,50 @@ export default function Home() {
       {/* About Section */}
       <section style={styles.aboutSection}>
         <div style={styles.cardsContainer}>
-
-          <div
-            style={styles.card}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <h3 style={styles.cardTitle}>Purpose</h3>
-            <p style={styles.cardText}>
-              SmartStudy simplifies learning through structured notes,
-              PYQs, and collaboration tools for students.
-            </p>
-          </div>
-
-          <div
-            style={styles.card}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <h3 style={styles.cardTitle}>
-              Syllabus Aligned Notes (Mumbai University)
-            </h3>
-            <p style={styles.cardText}>
-              B.Sc IT & B.Sc CS courses with syllabus-focused notes.
-            </p>
-          </div>
-
-          <div
-            style={styles.card}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <h3 style={styles.cardTitle}>Subject Based Quizzes</h3>
-            <p style={styles.cardText}>
-              Topic-wise quizzes to improve understanding and exam preparation.
-            </p>
-          </div>
-
-          <div
-            style={styles.card}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <h3 style={styles.cardTitle}>
-              Student–Author Collaboration
-            </h3>
-            <p style={styles.cardText}>
-              Authors upload notes & Q&A, students ask doubts —
-              interactive academic ecosystem.
-            </p>
-          </div>
-
+          {[
+            {
+              title: "Purpose",
+              text: "SmartStudy simplifies learning through structured notes, PYQs, and collaboration tools for students.",
+            },
+            {
+              title: "Syllabus Aligned Notes (Mumbai University)",
+              text: "B.Sc IT & B.Sc CS courses with syllabus-focused notes.",
+            },
+            {
+              title: "Subject Based Quizzes",
+              text: "Topic-wise quizzes to improve understanding and exam preparation.",
+            },
+            {
+              title: "Student–Author Collaboration",
+              text: "Authors upload notes & Q&A, students ask doubts — interactive academic ecosystem.",
+            },
+          ].map((card, index) => (
+            <div
+              key={index}
+              style={styles.card}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <h3 style={styles.cardTitle}>{card.title}</h3>
+              <p style={styles.cardText}>{card.text}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Certification Section (NEW – nothing else changed) */}
+      {/* Certification Section (CENTERED LIKE BEFORE) */}
       <section style={styles.certSection}>
-        <h2 style={styles.certTitle}>
-          Get Certified in Your Preferred Topics
-        </h2>
-
-        <button
-          style={styles.certButton}
-          onClick={handleExploreClick}
-        >
-          Click to Explore
-        </button>
+        <div style={styles.certBox}>
+          <h2 style={styles.certTitle}>
+            Get Certified in Your Preferred Topics
+          </h2>
+          <button
+            style={styles.certButton}
+            onClick={handleExploreClick}
+          >
+            Click to Explore
+          </button>
+        </div>
       </section>
 
       <Footer />
@@ -132,7 +110,8 @@ const styles = {
   page: {
     fontFamily: "Arial, sans-serif",
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #eef2ff, #ecfdf5)",
+    background:
+      "linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 50%, #ecfdf5 100%)",
   },
 
   searchSection: {
@@ -168,7 +147,7 @@ const styles = {
   searchButton: {
     padding: "0 35px",
     border: "none",
-    background: "#2563eb",
+    background: "#4f46e5",
     color: "#ffffff",
     fontSize: "16px",
     fontWeight: "500",
@@ -176,7 +155,7 @@ const styles = {
   },
 
   aboutSection: {
-    padding: "30px 20px 60px 20px",
+    padding: "30px 20px",
   },
 
   cardsContainer: {
@@ -188,11 +167,11 @@ const styles = {
   },
 
   card: {
-    background: "rgba(255,255,255,0.75)",
-    backdropFilter: "blur(8px)",
+    background: "rgba(255,255,255,0.85)",
+    backdropFilter: "blur(10px)",
     padding: "30px",
-    borderRadius: "14px",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
+    borderRadius: "16px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
     transition: "all 0.3s ease",
     cursor: "pointer",
   },
@@ -201,7 +180,7 @@ const styles = {
     fontSize: "18px",
     fontWeight: "700",
     marginBottom: "12px",
-    color: "#1e3a8a",
+    color: "#3730a3",
   },
 
   cardText: {
@@ -210,16 +189,26 @@ const styles = {
     lineHeight: "1.6",
   },
 
-  /* NEW CERTIFICATION STYLES */
   certSection: {
+    padding: "40px 20px",
+    display: "flex",
+    justifyContent: "center",
+  },
+
+  certBox: {
+    width: "100%",
+    maxWidth: "700px",
+    background: "rgba(255,255,255,0.9)",
+    padding: "40px",
+    borderRadius: "16px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
     textAlign: "center",
-    padding: "0px 20px 60px 20px",
   },
 
   certTitle: {
-    fontSize: "24px",
+    fontSize: "22px",
     fontWeight: "700",
-    marginBottom: "20px",
+    marginBottom: "25px",
     color: "#1e293b",
   },
 
@@ -227,11 +216,10 @@ const styles = {
     padding: "12px 40px",
     borderRadius: "30px",
     border: "none",
-    background: "#2563eb",
+    background: "#4f46e5",
     color: "#ffffff",
     fontSize: "15px",
     fontWeight: "500",
     cursor: "pointer",
-    transition: "0.3s",
   },
 };
