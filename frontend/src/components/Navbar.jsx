@@ -4,27 +4,15 @@ import { Link, useNavigate } from "react-router-dom";
 export default function Navbar() {
   const navigate = useNavigate();
   const [user, setUser] = useState(localStorage.getItem("user"));
-  const [showProfile, setShowProfile] = useState(false);
-  const [visitCount, setVisitCount] = useState(1);
-  const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    const count = parseInt(localStorage.getItem("visitCount") || "0") + 1;
-    localStorage.setItem("visitCount", count);
-    setVisitCount(count);
+    const storedUser = localStorage.getItem("user");
+    setUser(storedUser);
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      fetch("http://127.0.0.1:8000/api/user-stats/")
-        .then(res => res.json())
-        .then(data => setStats(data))
-        .catch(() => {});
-    }
-  }, [user]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("role");
     navigate("/");
     window.location.reload();
   };
@@ -45,35 +33,9 @@ export default function Navbar() {
             Login / Signup
           </Link>
         ) : (
-          <div style={styles.profileWrapper}>
-            <div
-              style={styles.profileIcon}
-              onClick={() => setShowProfile(!showProfile)}
-            >
-              {user.charAt(0).toUpperCase()}
-            </div>
-
-            {showProfile && (
-              <div style={styles.profileCard}>
-                <h4 style={{ margin: 0 }}>{user}</h4>
-
-                <button style={styles.menuBtn}>Viewed Topics</button>
-                <button style={styles.menuBtn}>Certifications</button>
-                <button style={styles.menuBtn}>Profile</button>
-                <button style={styles.menuBtn}>Notes Completed</button>
-                <button style={styles.menuBtn}>Your Leaderboard</button>
-
-                <div style={styles.statsBox}>
-                  Quiz Attempt (5 days):{" "}
-                  {stats ? stats.quiz_percentage + "%" : "Loading..."}
-                </div>
-
-                <button style={styles.logoutBtn} onClick={handleLogout}>
-                  {visitCount > 2 ? "Logout" : "Sign Out"}
-                </button>
-              </div>
-            )}
-          </div>
+          <button style={styles.logoutBtn} onClick={handleLogout}>
+            Logout
+          </button>
         )}
       </div>
     </nav>
@@ -125,60 +87,12 @@ const styles = {
     fontWeight: "500"
   },
 
-  profileWrapper: {
-    position: "relative"
-  },
-
-  profileIcon: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "50%",
-    background: "linear-gradient(135deg,#4f46e5,#06b6d4)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#fff",
-    fontWeight: "600",
-    cursor: "pointer"
-  },
-
-  profileCard: {
-    position: "absolute",
-    right: 0,
-    top: "48px",
-    width: "250px",
-    background: "#ffffff",
-    borderRadius: "12px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-    padding: "18px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-    zIndex: 100
-  },
-
-  menuBtn: {
-    background: "#f3f4f6",
-    border: "none",
-    padding: "8px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontSize: "14px"
-  },
-
-  statsBox: {
-    fontSize: "13px",
-    marginTop: "4px",
-    color: "#475569"
-  },
-
   logoutBtn: {
-    marginTop: "10px",
-    background: "#3556f8",
+    background: "#ef4444",
     color: "#fff",
+    padding: "8px 18px",
+    borderRadius: "20px",
     border: "none",
-    padding: "8px",
-    borderRadius: "6px",
     cursor: "pointer",
     fontWeight: "500"
   }

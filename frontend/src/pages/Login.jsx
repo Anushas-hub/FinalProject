@@ -20,9 +20,17 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("user", username);
+        localStorage.setItem("user", data.username);
+        localStorage.setItem("role", data.role);
+
         alert("Login Successful ✅");
-        navigate("/");
+
+        if (data.role === "student") {
+          navigate("/student-dashboard");
+        } else if (data.role === "author") {
+          navigate("/"); // author future dashboard
+        }
+
       } else {
         alert(data.error || "Invalid credentials ❌");
       }

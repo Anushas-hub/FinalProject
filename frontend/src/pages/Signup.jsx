@@ -16,6 +16,11 @@ export default function Signup() {
       return;
     }
 
+    if (!role) {
+      alert("Please select a role ❌");
+      return;
+    }
+
     try {
       const res = await fetch("http://127.0.0.1:8000/api/signup/", {
         method: "POST",
@@ -33,13 +38,16 @@ export default function Signup() {
       const data = await res.json();
 
       if (res.ok) {
-        // ✅ AUTO LOGIN AFTER SIGNUP
-        localStorage.setItem("user", username);
+        localStorage.setItem("user", data.username);
+        localStorage.setItem("role", data.role);
 
         alert("Account created successfully ✅");
 
-        // ✅ DIRECT HOME
-        navigate("/");
+        if (data.role === "student") {
+          navigate("/student-dashboard");
+        } else {
+          navigate("/");
+        }
       } else {
         alert(data.error || "User already exists ❌");
       }
@@ -103,10 +111,6 @@ export default function Signup() {
           Create Account
         </button>
 
-        <button style={styles.googleBtn}>
-          Continue with Google
-        </button>
-
         <p style={styles.switchText}>
           Already have an account?{" "}
           <Link to="/login" style={styles.link}>
@@ -145,9 +149,7 @@ const styles = {
     boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
     textAlign: "center",
   },
-  title: {
-    marginBottom: "20px",
-  },
+  title: { marginBottom: "20px" },
   input: {
     width: "100%",
     padding: "10px",
@@ -163,23 +165,7 @@ const styles = {
     border: "none",
     borderRadius: "6px",
     cursor: "pointer",
-    marginBottom: "10px",
   },
-  googleBtn: {
-    width: "100%",
-    padding: "10px",
-    background: "#f5f5f5",
-    border: "1px solid #ccc",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
-  switchText: {
-    marginTop: "15px",
-    fontSize: "14px",
-  },
-  link: {
-    color: "#2563eb",
-    textDecoration: "none",
-    fontWeight: "500",
-  },
+  switchText: { marginTop: "15px", fontSize: "14px" },
+  link: { color: "#2563eb", textDecoration: "none", fontWeight: "500" },
 };
