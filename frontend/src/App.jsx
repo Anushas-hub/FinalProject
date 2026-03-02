@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ExploreCertification from "./pages/ExploreCertification";
 import StudentDashboard from "./pages/StudentDashboard";
+import HomeStudyMaterial from "./pages/HomeStudyMaterial";
 
 function App() {
   return (
@@ -18,9 +19,10 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/explore-certification" element={<ExploreCertification />} />
-
-      {/* ✅ IMPORTANT */}
       <Route path="/student-dashboard" element={<StudentDashboard />} />
+      
+      {/* NEW ROUTE */}
+      <Route path="/study-material" element={<HomeStudyMaterial />} />
     </Routes>
   );
 }
