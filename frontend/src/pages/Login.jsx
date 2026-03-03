@@ -25,12 +25,14 @@ export default function Login() {
 
         alert("Login Successful ✅");
 
+        // ✅ FIXED ROLE REDIRECT
         if (data.role === "student") {
           navigate("/student-dashboard");
         } else if (data.role === "author") {
-          navigate("/"); // author future dashboard
+          navigate("/author-dashboard");
+        } else {
+          navigate("/"); // fallback
         }
-
       } else {
         alert(data.error || "Invalid credentials ❌");
       }
@@ -121,19 +123,19 @@ const styles = {
     borderRadius: "6px",
     border: "1px solid #ccc",
   },
- primaryBtn: {
-  width: "100%",
-  padding: "16px",
-  borderRadius: "20px",
-  border: "none",
-  background: "#4f46e5",   // BLUE SAME
-  color: "#ffffff",
-  fontWeight: "600",       // StudentDashboard jaisa
-  fontSize: "15px",
-  cursor: "pointer",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-  transition: "0.3s ease"
-},
+  primaryBtn: {
+    width: "100%",
+    padding: "16px",
+    borderRadius: "20px",
+    border: "none",
+    background: "#4f46e5",
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: "15px",
+    cursor: "pointer",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+    transition: "0.3s ease",
+  },
   switchText: { marginTop: "15px", fontSize: "14px" },
   link: { color: "#2563eb", textDecoration: "none", fontWeight: "500" },
 };
