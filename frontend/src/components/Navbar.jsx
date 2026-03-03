@@ -1,36 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const dropdownRef = useRef(null);
 
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setUser(localStorage.getItem("user"));
     setRole(localStorage.getItem("role"));
   }, []);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    setUser(null);
-    navigate("/");
-  };
 
   const goToDashboard = () => {
     if (role === "student") navigate("/student-dashboard");
@@ -55,28 +36,9 @@ const Navbar = () => {
             Login / Signup
           </Link>
         ) : (
-          <div className="profile-container" ref={dropdownRef}>
-            <div
-              className="profile-icon"
-              onClick={() => setOpen(!open)}
-            >
-              {user.charAt(0).toUpperCase()}
-            </div>
-
-            {open && (
-              <div className="profile-dropdown">
-                <button onClick={goToDashboard}>
-                  Dashboard
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="logout-btn"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
+          <button onClick={goToDashboard} className="dashboard-btn">
+            Dashboard
+          </button>
         )}
       </div>
     </div>
