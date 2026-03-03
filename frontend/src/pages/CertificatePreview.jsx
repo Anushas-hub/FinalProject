@@ -1,80 +1,70 @@
 import { useParams } from "react-router-dom";
+import "./certificate.css";
 
-export default function CertificationPreview() {
+export default function CertificatePreview() {
   const { id } = useParams();
-  const user = localStorage.getItem("user");
+
+  // 🔥 Replaceable Course Data (future me backend se aayega)
+  const courses = [
+    { id: "1", name: "Web Development Certification" },
+    { id: "2", name: "Data Structures Certification" },
+    { id: "3", name: "Java Programming Certification" },
+  ];
+
+  // 🔥 Safe Course Fetch
+  const course = courses.find((c) => c.id === id);
+  const courseName = course ? course.name : "Certification Course";
+
+  // 🔥 Safe User Fetch (crash proof)
+  let studentName = "Student";
+  try {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      studentName = user?.name || "Student";
+    }
+  } catch (err) {
+    studentName = "Student";
+  }
+
+  const date = new Date().toLocaleDateString();
 
   return (
-    <div style={styles.container}>
-      <div style={styles.certificate}>
-        <h1 style={styles.title}>Certificate of Completion</h1>
+    <div className="certificate-wrapper">
+      <div className="certificate-card">
 
-        <p style={styles.subtitle}>This is to certify that</p>
+        <div className="certificate-header">
+          <h2>SmartStudy</h2>
+        </div>
 
-        <h2 style={styles.name}>{user}</h2>
+        <h1 className="certificate-title">
+          Certificate of Completion
+        </h1>
 
-        <p style={styles.text}>
-          has successfully completed the certification course
+        <p className="certificate-sub">
+          This is proudly presented to
         </p>
 
-        <h3 style={styles.course}>Course ID: {id}</h3>
+        <h2 className="certificate-name">
+          {studentName}
+        </h2>
 
-        <p style={styles.date}>
-          Date: {new Date().toLocaleDateString()}
+        <p className="certificate-text">
+          for successfully completing
         </p>
+
+        <h3 className="course-name">
+          {courseName}
+        </h3>
+
+        <div className="certificate-footer">
+          <span>Date: {date}</span>
+          <span className="signature">
+            Authorized Signature
+          </span>
+        </div>
+
       </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#f3f4f6",
-    padding: "40px",
-  },
-  certificate: {
-    width: "800px",
-    padding: "60px",
-    borderRadius: "20px",
-    background: "#ffffff",
-    border: "8px solid #4f46e5",
-    textAlign: "center",
-    boxShadow: "0 20px 50px rgba(0,0,0,0.1)",
-  },
-  title: {
-    fontSize: "32px",
-    marginBottom: "20px",
-    color: "#4f46e5",
-    fontWeight: "700",
-  },
-  subtitle: {
-    fontSize: "18px",
-    marginBottom: "10px",
-    color: "#555",
-  },
-  name: {
-    fontSize: "36px",
-    margin: "20px 0",
-    color: "#111",
-    fontWeight: "600",
-  },
-  text: {
-    fontSize: "18px",
-    marginBottom: "15px",
-    color: "#444",
-  },
-  course: {
-    fontSize: "20px",
-    marginTop: "10px",
-    color: "#1e293b",
-  },
-  date: {
-    marginTop: "30px",
-    fontSize: "16px",
-    color: "#666",
-  },
-};

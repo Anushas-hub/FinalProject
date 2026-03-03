@@ -1,0 +1,65 @@
+.certificate-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4f46e5, #6d28d9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.certificate-card {
+  width: 900px;
+  background: white;
+  padding: 60px 80px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.certificate-header h2 {
+  color: #4f46e5;
+  margin-bottom: 30px;
+}
+
+.certificate-title {
+  font-size: 34px;
+  color: #4f46e5;
+  margin-bottom: 20px;
+}
+
+.certificate-sub {
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.certificate-name {
+  font-size: 40px;
+  margin: 20px 0;
+  font-weight: bold;
+  color: #111;
+}
+
+.certificate-text {
+  color: #444;
+  margin-bottom: 10px;
+}
+
+.course-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: #4f46e5;
+  margin-bottom: 40px;
+}
+
+.certificate-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  font-size: 14px;
+  color: #555;
+}
+
+.signature {
+  border-top: 1px solid #000;
+  padding-top: 5px;
+}
