@@ -129,6 +129,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
+    fontFamily: "Arial, sans-serif",
   },
   backBtn: {
     position: "absolute",
