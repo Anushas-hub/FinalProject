@@ -1,0 +1,58 @@
+.analytics-container {
+  padding: 20px;
+}
+
+.analytics-cards {
+  display: flex;
+  gap: 40px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.circle-card {
+  text-align: center;
+}
+
+.circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: 0.4s ease;
+}
+
+.inner-circle {
+  width: 110px;
+  height: 110px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+  flex-direction: column;
+}
+
+.circle-count {
+  font-size: 12px;
+  font-weight: normal;
+  color: #777;
+  margin-top: 4px;
+}
+
+.growth-section {
+  margin-top: 40px;
+  padding: 20px;
+  background: #f4f6ff;
+  border-radius: 10px;
+}
+
+.growth-number {
+  font-size: 22px;
+  font-weight: bold;
+  color: #4CAF50;
+}
