@@ -123,7 +123,6 @@ const styles = {
   wrapper: {
     display: "flex",
     minHeight: "100vh",
-    fontFamily: "Arial, sans-serif",
     background: "linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 50%, #ecfdf5 100%)"
   },
 
@@ -156,25 +155,26 @@ const styles = {
   },
 
   menuBtn: {
-    padding: "10px",
-    borderRadius: "8px",
-    border: "none",
-    background: "#f3f4f6",
-    cursor: "pointer",
-    fontWeight: "500"
-  },
+  padding: "16px",
+  borderRadius: "20px",
+  border: "none",
+  background: "#ffffff",
+  cursor: "pointer",
+  fontWeight: "600",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+  transition: "0.3s ease"
+},
 
-  logoutBtn: {
-    marginTop: "auto",
-    padding: "10px",
-    borderRadius: "8px",
-    border: "none",
-    background: "#ef4444",
-    color: "#fff",
-    cursor: "pointer",
-    fontWeight: "500"
-  },
-
+logoutBtn: {
+  marginTop: "auto",
+  padding: "16px",
+  borderRadius: "20px",
+  border: "none",
+  background: "#ffffff",
+  cursor: "pointer",
+  fontWeight: "600",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+},
   mainContent: {
     flex: 1,
     padding: "40px"

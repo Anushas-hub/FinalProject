@@ -23,7 +23,6 @@ const styles = {
     textAlign: "center",
     marginTop: "30px", // reduced gap
     boxShadow: "0 -2px 8px rgba(0,0,0,0.05)",
-    fontFamily: "Arial, sans-serif",
   },
   linksContainer: {
     display: "flex",

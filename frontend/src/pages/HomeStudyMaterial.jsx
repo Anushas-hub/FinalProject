@@ -1,170 +1,162 @@
-import React from "react";
+import { useState } from "react";
 import Navbar from "../components/Navbar";
-import { Link } from "react-router-dom";
 
-const StudyMaterial = () => {
+export default function HomeStudyMaterial() {
+  const [search, setSearch] = useState("");
+
+  const topics = [
+    { id: 1, title: "Study Topic 1" },
+    { id: 2, title: "Study Topic 2" },
+    { id: 3, title: "Study Topic 3" },
+    { id: 4, title: "Study Topic 4" },
+  ];
+
+  const filteredTopics = topics.filter((topic) =>
+    topic.title.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <>
+    <div style={styles.wrapper}>
       <Navbar />
 
-      <div style={styles.wrapper}>
-        {/* Hero Section */}
-        <div style={styles.hero}>
-          <h1 style={styles.title}>StudyMaterial</h1>
-          <p style={styles.subtitle}>
-            SmartStudy lets learn and collaborate
-          </p>
+      {/* SEARCH */}
+      <div style={styles.searchSection}>
+        <input
+          type="text"
+          placeholder="Search study materials, subjects, courses..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={styles.searchInput}
+        />
+        <button style={styles.searchBtn}>Search</button>
+      </div>
+
+      {/* HEADING */}
+      <div style={styles.hero}>
+        <h1 style={styles.title}>StudyMaterial</h1>
+        <p style={styles.subtitle}>
+          SmartStudy lets learn and collaborate
+        </p>
+      </div>
+
+      {/* MAIN BODY */}
+      <div style={styles.container}>
+        {/* SIDE PANEL */}
+        <div style={styles.sidebar}>
+          <button style={styles.sideBtn}>Latest</button>
+          <button style={styles.sideBtn}>By Top Authors</button>
+          <button style={styles.sideBtn}>By SmartStudy</button>
+          <button style={styles.sideBtn}>Top Viewed Study Courses</button>
         </div>
 
-        {/* Main Layout */}
-        <div style={styles.container}>
-          
-          {/* Side Panel */}
-          <div style={styles.sidebar}>
-            <button style={styles.sideBtn}>Latest</button>
-            <button style={styles.sideBtn}>By Top Authors</button>
-            <button style={styles.sideBtn}>By SmartStudy</button>
-            <button style={styles.sideBtn}>Top Viewed Study Courses</button>
-          </div>
-
-          {/* Right Content */}
-          <div style={styles.content}>
-            
-            {/* Search Bar */}
-            <div style={styles.searchBox}>
-              <input
-                type="text"
-                placeholder="Search study materials, subjects, courses..."
-                style={styles.searchInput}
-              />
-              <button style={styles.searchBtn}>Search</button>
-            </div>
-
-            {/* Study Topic Cards */}
-            <div style={styles.grid}>
-              <div style={styles.card}>
-                <h3 style={styles.cardTitle}>Study Topic 1</h3>
+        {/* CONTENT */}
+        <div style={styles.content}>
+          <div style={styles.grid}>
+            {filteredTopics.map((topic) => (
+              <div key={topic.id} style={styles.card}>
+                <h3 style={styles.cardTitle}>{topic.title}</h3>
                 <p>Structured notes, quizzes and PYQs available.</p>
               </div>
-
-              <div style={styles.card}>
-                <h3 style={styles.cardTitle}>Study Topic 2</h3>
-                <p>Structured notes, quizzes and PYQs available.</p>
-              </div>
-
-              <div style={styles.card}>
-                <h3 style={styles.cardTitle}>Study Topic 3</h3>
-                <p>Structured notes, quizzes and PYQs available.</p>
-              </div>
-
-              <div style={styles.card}>
-                <h3 style={styles.cardTitle}>Study Topic 4</h3>
-                <p>Structured notes, quizzes and PYQs available.</p>
-              </div>
-            </div>
-
+            ))}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
-};
+}
 
 const styles = {
   wrapper: {
-    background: "#f4f6fb",
     minHeight: "100vh",
-    paddingBottom: "40px"
+    background:
+      "linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 50%, #ecfdf5 100%)",
+  },
+
+  /* 🔥 GAP REDUCED */
+  searchSection: {
+    maxWidth: "900px",
+    margin: "25px auto 10px auto", // reduced top & bottom gap
+    display: "flex",
+    borderRadius: "50px",
+    overflow: "hidden",
+    background: "#ffffff",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
+  },
+
+  searchInput: {
+    flex: 1,
+    padding: "14px 22px",
+    border: "none",
+    outline: "none",
+    fontSize: "15px",
+  },
+
+  searchBtn: {
+    padding: "0 30px",
+    border: "none",
+    background: "#4f46e5",
+    color: "#ffffff",
+    fontSize: "14px",
+    cursor: "pointer",
   },
 
   hero: {
-    padding: "40px 80px 10px 80px"
+    padding: "5px 80px 15px 80px", // reduced bottom gap
   },
 
   title: {
-    fontSize: "48px",
-    marginBottom: "5px",
-    color: "#1c1c3a"
+    fontSize: "36px",
+    marginBottom: "3px",
+    color: "#1e293b",
   },
 
   subtitle: {
-    fontSize: "18px",
-    color: "#555"
+    fontSize: "14px",
+    color: "#64748b",
   },
 
   container: {
     display: "flex",
-    gap: "40px",
-    padding: "20px 80px"
+    gap: "30px",
+    padding: "0 80px 40px 80px", // reduced bottom spacing
   },
 
   sidebar: {
-    width: "260px",
+    width: "240px",
     display: "flex",
     flexDirection: "column",
-    gap: "20px"
+    gap: "15px",
   },
 
   sideBtn: {
-    padding: "16px",
-    borderRadius: "20px",
+    padding: "14px",
+    borderRadius: "18px",
     border: "none",
     background: "#ffffff",
     fontWeight: "600",
     cursor: "pointer",
     boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-    transition: "0.3s"
   },
 
   content: {
-    flex: 1
-  },
-
-  searchBox: {
-    display: "flex",
-    marginBottom: "30px",
-    marginTop: "0px"
-  },
-
-  searchInput: {
     flex: 1,
-    padding: "16px",
-    borderRadius: "30px 0 0 30px",
-    border: "none",
-    outline: "none",
-    fontSize: "16px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
-  },
-
-  searchBtn: {
-    padding: "16px 30px",
-    borderRadius: "0 30px 30px 0",
-    border: "none",
-    background: "linear-gradient(90deg,#5f5fff,#7a5fff)",
-    color: "white",
-    fontWeight: "600",
-    cursor: "pointer"
   },
 
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "30px"
+    gap: "20px", // reduced gap between cards
   },
 
   card: {
-    background: "white",
-    padding: "25px",
-    borderRadius: "20px",
+    background: "#ffffff",
+    padding: "22px",
+    borderRadius: "18px",
     boxShadow: "0 6px 15px rgba(0,0,0,0.05)",
-    cursor: "pointer",
-    transition: "0.3s"
   },
 
   cardTitle: {
-    color: "#4a4aff",
-    marginBottom: "10px"
-  }
+    color: "#4f46e5",
+    marginBottom: "8px",
+  },
 };
-
-export default StudyMaterial;

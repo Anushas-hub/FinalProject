@@ -72,7 +72,6 @@ const styles = {
     maxWidth: "900px",
     margin: "40px auto",
     padding: "20px",
-    fontFamily: "Arial, sans-serif",
     lineHeight: "1.7",
     color: "#333",
   },

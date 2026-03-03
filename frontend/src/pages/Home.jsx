@@ -108,7 +108,6 @@ export default function Home() {
 
 const styles = {
   page: {
-    fontFamily: "Arial, sans-serif",
     minHeight: "100vh",
     background:
       "linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 50%, #ecfdf5 100%)",

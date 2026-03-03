@@ -129,7 +129,6 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-    fontFamily: "Arial, sans-serif",
   },
   backBtn: {
     position: "absolute",
@@ -158,14 +157,18 @@ const styles = {
     border: "1px solid #ccc",
   },
   primaryBtn: {
-    width: "100%",
-    padding: "10px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
+  width: "100%",
+  padding: "16px",
+  borderRadius: "20px",
+  border: "none",
+  background: "#4f46e5",   // BLUE SAME
+  color: "#ffffff",
+  fontWeight: "600",
+  fontSize: "15px",
+  cursor: "pointer",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+  transition: "0.3s ease"
+},
   switchText: { marginTop: "15px", fontSize: "14px" },
   link: { color: "#2563eb", textDecoration: "none", fontWeight: "500" },
 };

@@ -37,7 +37,6 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    fontFamily: "Arial",
   },
   card: {
     width: "450px",
@@ -58,12 +57,13 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #ccc",
   },
-  btn: {
-    padding: "12px",
-    borderRadius: "8px",
-    border: "none",
-    background: "#2563eb",
-    color: "#fff",
-    cursor: "pointer",
-  },
-};
+ btn: {
+  padding: "16px",
+  borderRadius: "20px",
+  border: "none",
+  background: "#ffffff",
+  fontWeight: "600",
+  cursor: "pointer",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+},
+}
