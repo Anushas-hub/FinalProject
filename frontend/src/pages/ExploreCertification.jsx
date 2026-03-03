@@ -1,12 +1,16 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function ExploreCertification() {
   const navigate = useNavigate();
   const user = localStorage.getItem("user");
 
+  const [search, setSearch] = useState("");
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert("Course flow will connect here next 🚀");
+    if (!search.trim()) return;
+    navigate(`/certifications?search=${search}`);
   };
 
   return (
@@ -18,9 +22,12 @@ export default function ExploreCertification() {
         </h2>
 
         <form onSubmit={handleSubmit} style={styles.form}>
-          <input placeholder="Which Course?" style={styles.input} />
-          <input placeholder="Subject?" style={styles.input} />
-          <input placeholder="Topic?" style={styles.input} />
+          <input
+            placeholder="Search Certification Course..."
+            style={styles.input}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
 
           <button style={styles.btn}>
             Explore Course
@@ -42,7 +49,7 @@ const styles = {
     width: "450px",
     padding: "35px",
     borderRadius: "14px",
-    background: "rgba(255,255,255,0.9)",
+    background: "rgba(255,255,255,0.95)",
     boxShadow: "0 15px 35px rgba(0,0,0,0.08)",
     textAlign: "center",
   },
@@ -57,13 +64,13 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #ccc",
   },
- btn: {
-  padding: "16px",
-  borderRadius: "20px",
-  border: "none",
-  background: "#ffffff",
-  fontWeight: "600",
-  cursor: "pointer",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-},
-}
+  btn: {
+    padding: "14px",
+    borderRadius: "10px",
+    border: "none",
+    background: "#4f46e5",
+    color: "#fff",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+};

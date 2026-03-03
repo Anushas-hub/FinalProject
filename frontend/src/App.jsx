@@ -1,34 +1,51 @@
 import { Routes, Route } from "react-router-dom";
+
 import Home from "./pages/Home";
 import Blog from "./pages/Blog";
 import Connect from "./pages/Connect";
 import Reference from "./pages/Reference";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import ExploreCertification from "./pages/ExploreCertification";
 import StudentDashboard from "./pages/StudentDashboard";
 import HomeStudyMaterial from "./pages/HomeStudyMaterial";
 import AuthorDashboard from "./pages/AuthorDashboard";
-import PreviousYearQuestions from "./pages/PreviousYearQuestions"; 
+import PreviousYearQuestions from "./pages/PreviousYearQuestions";
 import TopicContent from "./pages/TopicContent";
+
+import ExploreCertification from "./pages/ExploreCertification";
+import CertificationResults from "./pages/CertificationResults";
+import CertificationCourse from "./pages/CertificationCourse";
+import QuizPage from "./pages/QuizPage";
+import CertificationSuccess from "./pages/CertificationSuccess";
+import CertificationPreview from "./pages/CertificatePreview"; // 🔥 filename check karo
 
 function App() {
   return (
     <Routes>
+
+      {/* CERTIFICATION FLOW */}
+      <Route path="/explore-certification" element={<ExploreCertification />} />
+      <Route path="/certifications" element={<CertificationResults />} /> {/* 🔥 ADD THIS */}
+      <Route path="/certification/:id" element={<CertificationCourse />} />
+      <Route path="/certification/:id/quiz/:quizId" element={<QuizPage />} />
+      <Route path="/certification/:id/success" element={<CertificationSuccess />} />
+      <Route path="/certificate/:id" element={<CertificationPreview />} />
+
+      {/* STUDY MATERIAL */}
       <Route path="/study-material/:id" element={<TopicContent />} />
+      <Route path="/study-material" element={<HomeStudyMaterial />} />
+
+      {/* OTHER ROUTES */}
       <Route path="/previous-year-questions" element={<PreviousYearQuestions />} />
       <Route path="/author-dashboard" element={<AuthorDashboard />} />
+      <Route path="/student-dashboard" element={<StudentDashboard />} />
       <Route path="/" element={<Home />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/connect" element={<Connect />} />
       <Route path="/reference" element={<Reference />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/explore-certification" element={<ExploreCertification />} />
-      <Route path="/student-dashboard" element={<StudentDashboard />} />
-      
-      {/* NEW ROUTE */}
-      <Route path="/study-material" element={<HomeStudyMaterial />} />
+
     </Routes>
   );
 }
