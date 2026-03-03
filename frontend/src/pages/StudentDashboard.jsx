@@ -154,8 +154,9 @@ const styles = {
  hero: {
   background: "#4f46e5",
   color: "#ffffff",
-  padding: "18px 60px",   // 👈 pehle 50px tha, ab compact
+  padding: "18px 20px",
   display: "flex",
+  flexWrap: "wrap",
   justifyContent: "space-between",
   alignItems: "center",
 },
@@ -182,21 +183,23 @@ const styles = {
   },
 
   /* MAIN */
-  wrapper: {
+ wrapper: {
   display: "flex",
-  marginTop: "25px",   // 👈 ye 1-2 line ka gap dega
-  padding: "0 40px",   // optional: thoda side breathing space
+  flexWrap: "wrap",
+  marginTop: "25px",
+  padding: "0 20px",
 },
 
-  sidebar: {
-    width: "260px",
-    background: "#ffffff",
-    padding: "30px 20px",
-    boxShadow: "4px 0 15px rgba(0,0,0,0.05)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-  },
+ sidebar: {
+  width: "260px",
+  minWidth: "220px",
+  background: "#ffffff",
+  padding: "30px 20px",
+  boxShadow: "4px 0 15px rgba(0,0,0,0.05)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "15px",
+},
 
   profileBox: {
     textAlign: "center",
@@ -285,10 +288,10 @@ const styles = {
   },
 
   cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "25px",
-  },
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+  gap: "25px",
+},
 
   card: {
     background: "#ffffff",

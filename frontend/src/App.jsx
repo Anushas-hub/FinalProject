@@ -10,10 +10,12 @@ import StudentDashboard from "./pages/StudentDashboard";
 import HomeStudyMaterial from "./pages/HomeStudyMaterial";
 import AuthorDashboard from "./pages/AuthorDashboard";
 import PreviousYearQuestions from "./pages/PreviousYearQuestions"; 
+import TopicContent from "./pages/TopicContent";
 
 function App() {
   return (
     <Routes>
+      <Route path="/study-material/:id" element={<TopicContent />} />
       <Route path="/previous-year-questions" element={<PreviousYearQuestions />} />
       <Route path="/author-dashboard" element={<AuthorDashboard />} />
       <Route path="/" element={<Home />} />
