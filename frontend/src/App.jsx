@@ -8,10 +8,12 @@ import Signup from "./pages/Signup";
 import ExploreCertification from "./pages/ExploreCertification";
 import StudentDashboard from "./pages/StudentDashboard";
 import HomeStudyMaterial from "./pages/HomeStudyMaterial";
+import AuthorDashboard from "./pages/AuthorDashboard";
 
 function App() {
   return (
     <Routes>
+      <Route path="/author-dashboard" element={<AuthorDashboard />} />
       <Route path="/" element={<Home />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/connect" element={<Connect />} />
