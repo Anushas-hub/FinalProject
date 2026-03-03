@@ -9,10 +9,12 @@ import ExploreCertification from "./pages/ExploreCertification";
 import StudentDashboard from "./pages/StudentDashboard";
 import HomeStudyMaterial from "./pages/HomeStudyMaterial";
 import AuthorDashboard from "./pages/AuthorDashboard";
+import PreviousYearQuestions from "./pages/PreviousYearQuestions"; 
 
 function App() {
   return (
     <Routes>
+      <Route path="/previous-year-questions" element={<PreviousYearQuestions />} />
       <Route path="/author-dashboard" element={<AuthorDashboard />} />
       <Route path="/" element={<Home />} />
       <Route path="/blog" element={<Blog />} />

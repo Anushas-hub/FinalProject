@@ -27,7 +27,7 @@ const Navbar = () => {
       <div className="nav-center">
         <Link to="/">Home</Link>
         <Link to="/study-material">Study Material</Link>
-        <Link to="/pyq">Previous Year Question Papers</Link>
+        <Link to="/previous-year-questions">Previous Year Question Papers</Link>
       </div>
 
       <div className="nav-right">
