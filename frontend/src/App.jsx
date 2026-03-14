@@ -27,9 +27,10 @@ function App() {
       <Route path="/explore-certification" element={<ExploreCertification />} />
       <Route path="/certifications" element={<CertificationResults />} /> {/* 🔥 ADD THIS */}
       <Route path="/certification/:id" element={<CertificationCourse />} />
-      <Route path="/certification/:id/quiz/:quizId" element={<QuizPage />} />
+      <Route path="/quiz/:id" element={<QuizPage />} />
       <Route path="/certification/:id/success" element={<CertificationSuccess />} />
       <Route path="/certificate/:id" element={<CertificationPreview />} />
+
 
       {/* STUDY MATERIAL */}
       <Route path="/study-material/:id" element={<TopicContent />} />

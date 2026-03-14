@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import "./HomeStudyMaterial.css";
@@ -6,13 +6,19 @@ import "./HomeStudyMaterial.css";
 function HomeStudyMaterial() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("latest");
+  const [topics, setTopics] = useState([]);
 
-  const topics = [
-    { id: 1, title: "Data Structures" },
-    { id: 2, title: "Database Management System" },
-    { id: 3, title: "Operating System" },
-    { id: 4, title: "Computer Networks" },
-  ];
+  // 🔥 Backend se subjects fetch
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/subjects/")
+      .then((res) => res.json())
+      .then((data) => {
+        setTopics(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching subjects:", error);
+      });
+  }, []);
 
   return (
     <>
@@ -44,7 +50,7 @@ function HomeStudyMaterial() {
           {topics.map((topic) => (
             <div className="topic-card" key={topic.id}>
               <h2>{topic.title}</h2>
-              <p>Structured notes, quizzes and PYQs available.</p>
+              <p>{topic.description}</p>
               <button
                 className="explore-btn"
                 onClick={() => navigate(`/study-material/${topic.id}`)}
