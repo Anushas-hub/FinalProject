@@ -2,9 +2,12 @@ import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function Home() {
   const navigate = useNavigate();
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleMouseEnter = (e) => {
     e.currentTarget.style.transform = "scale(1.04)";
@@ -33,6 +36,12 @@ export default function Home() {
     }
   };
 
+  const handleSearch = () => {
+    if (!searchTerm.trim()) return;
+
+    navigate(`/study-material?search=${searchTerm}`);
+  };
+
   return (
     <div style={styles.page}>
       <Navbar />
@@ -47,8 +56,13 @@ export default function Home() {
             type="text"
             placeholder="Search study materials, PYQs, subjects..."
             style={styles.searchInput}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button style={styles.searchButton}>Search</button>
+
+          <button style={styles.searchButton} onClick={handleSearch}>
+            Search
+          </button>
         </div>
       </section>
 
@@ -86,12 +100,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Certification Section (CENTERED LIKE BEFORE) */}
+      {/* Certification Section */}
       <section style={styles.certSection}>
         <div style={styles.certBox}>
           <h2 style={styles.certTitle}>
             Get Certified in Your Preferred Topics
           </h2>
+
           <button
             style={styles.certButton}
             onClick={handleExploreClick}
