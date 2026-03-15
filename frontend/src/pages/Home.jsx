@@ -2,12 +2,23 @@ import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
+
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [subjects, setSubjects] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+
+  // fetch subjects once
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/subjects/")
+      .then((res) => res.json())
+      .then((data) => setSubjects(data))
+      .catch((err) => console.error(err));
+  }, []);
 
   const handleMouseEnter = (e) => {
     e.currentTarget.style.transform = "scale(1.04)";
@@ -36,12 +47,65 @@ export default function Home() {
     }
   };
 
-  const handleSearch = () => {
-    if (!searchTerm.trim()) return;
+  const handleChange = (e) => {
 
-    navigate(`/study-material?search=${searchTerm}`);
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (value.length > 0) {
+
+      const filtered = subjects.filter((subject) =>
+        subject.title.toLowerCase().includes(value.toLowerCase())
+      );
+
+      setSuggestions(filtered);
+
+    } else {
+
+      setSuggestions([]);
+
+    }
   };
 
+  const handleSuggestionClick = (id, title) => {
+
+    setSearchTerm(title);
+    setSuggestions([]);
+    navigate(`/study-material/${id}`);
+
+  };
+
+const handleSearch = () => {
+
+if (!searchTerm.trim()) return;
+
+const text = searchTerm.toLowerCase()
+
+const yearMatch = text.match(/\b(20\d{2})\b/)
+const year = yearMatch ? yearMatch[0] : ""
+
+if (
+text.includes("pyq") ||
+text.includes("previous year") ||
+text.includes("question")
+){
+
+let subject=text
+.replace("pyq","")
+.replace("previous year","")
+.replace("question","")
+.replace(/\b20\d{2}\b/,"")
+.trim()
+
+navigate(`/previous-year-questions?subject=${subject}&year=${year}`)
+
+return
+
+}
+
+navigate(`/study-material?search=${searchTerm}`)
+
+}
   return (
     <div style={styles.page}>
       <Navbar />
@@ -51,19 +115,46 @@ export default function Home() {
       <section style={styles.searchSection}>
         <h2 style={styles.searchTitle}>Let's Start Learning</h2>
 
-        <div style={styles.searchWrapper}>
-          <input
-            type="text"
-            placeholder="Search study materials, PYQs, subjects..."
-            style={styles.searchInput}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div style={{position:"relative", maxWidth:"850px", margin:"0 auto"}}>
 
-          <button style={styles.searchButton} onClick={handleSearch}>
-            Search
-          </button>
+          <div style={styles.searchWrapper}>
+            <input
+              type="text"
+              placeholder="Search study materials, PYQs, subjects..."
+              style={styles.searchInput}
+              value={searchTerm}
+              onChange={handleChange}
+            />
+
+            <button style={styles.searchButton} onClick={handleSearch}>
+              Search
+            </button>
+          </div>
+
+          {/* Suggestions Dropdown */}
+
+          {suggestions.length > 0 && (
+
+            <div style={styles.suggestionBox}>
+
+              {suggestions.map((item) => (
+
+                <div
+                  key={item.id}
+                  style={styles.suggestionItem}
+                  onClick={() => handleSuggestionClick(item.id, item.title)}
+                >
+                  {item.title}
+                </div>
+
+              ))}
+
+            </div>
+
+          )}
+
         </div>
+
       </section>
 
       {/* About Section */}
@@ -141,8 +232,6 @@ const styles = {
   },
 
   searchWrapper: {
-    maxWidth: "850px",
-    margin: "0 auto",
     display: "flex",
     borderRadius: "50px",
     overflow: "hidden",
@@ -166,6 +255,23 @@ const styles = {
     fontSize: "16px",
     fontWeight: "500",
     cursor: "pointer",
+  },
+
+  suggestionBox: {
+    position: "absolute",
+    width: "100%",
+    background: "#fff",
+    borderRadius: "10px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+    marginTop: "5px",
+    zIndex: 10,
+    textAlign: "left",
+  },
+
+  suggestionItem: {
+    padding: "12px 20px",
+    cursor: "pointer",
+    borderBottom: "1px solid #eee",
   },
 
   aboutSection: {

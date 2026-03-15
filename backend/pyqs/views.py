@@ -11,22 +11,59 @@ def get_pyq(request):
     subject = request.GET.get("subject")
     year = request.GET.get("year")
 
-    pyqs = PYQ.objects.filter(
-        course=course,
-        semester=semester,
-        subject=subject,
-        year=year
-    )
+    pyqs = PYQ.objects.all()
+
+    if course:
+        pyqs = pyqs.filter(course__icontains=course)
+
+    if semester:
+        pyqs = pyqs.filter(semester=semester)
+
+    if subject:
+        pyqs = pyqs.filter(subject__icontains=subject)
+
+    if year:
+        pyqs = pyqs.filter(year=year)
 
     data = []
 
     for p in pyqs:
         data.append({
-            "pdf": p.pdf.url
+            "pdf": p.pdf.url,
+            "subject": p.subject,
+            "year": p.year,
+            "course": p.course,
+            "semester": p.semester
         })
 
     return Response(data)
 
+
+@api_view(["GET"])
+def pyq_subjects(request):
+
+    course = request.GET.get("course")
+    semester = request.GET.get("semester")
+
+    pyqs = PYQ.objects.all()
+
+    if course:
+        pyqs = pyqs.filter(course=course)
+
+    if semester:
+        pyqs = pyqs.filter(semester=semester)
+
+    subjects = pyqs.values_list("subject", flat=True).distinct()
+
+    data = []
+
+    for s in subjects:
+        data.append({
+            "value": s,
+            "label": s
+        })
+
+    return Response(data)
 
 @api_view(["GET"])
 def pyq_options(request):
@@ -40,24 +77,3 @@ def pyq_options(request):
         "semesters": semesters,
         "years": years
     })
-
-@api_view(["GET"])
-def pyq_subjects(request):
-
-    course = request.GET.get("course")
-    semester = request.GET.get("semester")
-
-    subjects = PYQ.objects.filter(
-        course=course,
-        semester=semester
-    ).values_list("subject", flat=True).distinct()
-
-    data = []
-
-    for s in subjects:
-        data.append({
-            "value": s,
-            "label": s
-        })
-
-    return Response(data)

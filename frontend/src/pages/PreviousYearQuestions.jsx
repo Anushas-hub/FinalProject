@@ -1,36 +1,46 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import { useLocation } from "react-router-dom";
 
 export default function PreviousYearQuestions() {
+
+const location = useLocation()
 
 const [courses,setCourses] = useState([])
 const [semesters,setSemesters] = useState([])
 const [years,setYears] = useState([])
 const [subjects,setSubjects] = useState([])
 
-const [course, setCourse] = useState("");
-const [semester, setSemester] = useState("");
-const [subject, setSubject] = useState("");
-const [year, setYear] = useState("");
+const [course,setCourse] = useState("")
+const [semester,setSemester] = useState("")
+const [subject,setSubject] = useState("")
+const [year,setYear] = useState("")
 
-const [showPDF, setShowPDF] = useState(false);
-const [pdfUrl, setPdfUrl] = useState("");
-const [downloading, setDownloading] = useState(false);
+const [showPDF,setShowPDF] = useState(false)
+const [pdfUrl,setPdfUrl] = useState("")
 
-// load options
+const [pyqCards,setPyqCards] = useState([])
+
+
+
+// dropdown options
 useEffect(()=>{
 
 fetch("http://127.0.0.1:8000/api/pyq-options/")
 .then(res=>res.json())
 .then(data=>{
-  setCourses(data.courses || [])
-  setSemesters(data.semesters || [])
-  setYears(data.years || [])
+
+setCourses(data.courses || [])
+setSemesters(data.semesters || [])
+setYears(data.years || [])
+
 })
 
 },[])
 
-// load subjects
+
+
+// subjects
 useEffect(()=>{
 
 if(!course || !semester) return
@@ -38,237 +48,339 @@ if(!course || !semester) return
 fetch(`http://127.0.0.1:8000/api/pyq-subjects/?course=${course}&semester=${semester}`)
 .then(res=>res.json())
 .then(data=>{
-  setSubjects(data || [])
+
+setSubjects(data || [])
+
 })
 
 },[course,semester])
 
+
+
+// HOME SEARCH
+useEffect(()=>{
+
+const params=new URLSearchParams(location.search)
+
+const subjectParam=params.get("subject")
+const yearParam=params.get("year")
+
+if(!subjectParam && !yearParam) return
+
+let url=`http://127.0.0.1:8000/api/pyqs/?`
+
+if(subjectParam){
+url+=`subject=${subjectParam}&`
+}
+
+if(yearParam){
+url+=`year=${yearParam}`
+}
+
+fetch(url)
+.then(res=>res.json())
+.then(data=>{
+
+if(!data || data.length===0) return
+
+setPyqCards(data)
+
+})
+
+},[location.search])
+
+
+
 const handleGetPYQ = async () => {
 
 if (!course || !semester || !subject || !year) {
-  alert("Please select all fields.");
-  return;
+alert("Please select all fields.")
+return
 }
 
-try {
+try{
 
-  const res = await fetch(
-    `http://127.0.0.1:8000/api/pyqs/?course=${course}&semester=${semester}&subject=${subject}&year=${year}`
-  );
+const res = await fetch(
+`http://127.0.0.1:8000/api/pyqs/?course=${course}&semester=${semester}&subject=${subject}&year=${year}`
+)
 
-  const data = await res.json();
+const data = await res.json()
 
-  if (!data || data.length === 0) {
-    alert("No PYQ found");
-    return;
-  }
-
-  const pdf = "http://127.0.0.1:8000" + data[0].pdf;
-
-  setPdfUrl(pdf);
-  setShowPDF(true);
-
-} catch (err) {
-  console.error(err);
-  alert("Error fetching PYQ");
+if(!data || data.length===0){
+alert("No PYQ found")
+return
 }
 
-};
+setPyqCards(data)
 
-const handleBack = () => {
-setShowPDF(false);
-setPdfUrl("");
-};
+}catch(err){
 
-const handleDownload = () => {
+console.error(err)
+alert("Error fetching PYQ")
 
-setDownloading(true);
+}
 
-const link = document.createElement("a");
-link.href = pdfUrl;
-link.setAttribute("download", `${subject}-${year}.pdf`);
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
-
-setTimeout(() => {
-  setDownloading(false);
-}, 1200);
-
-};
-
-return ( <div style={styles.wrapper}> <Navbar />
-
-  <div style={styles.blueBox}>
-    <h2 style={styles.blueTitle}>Previous Year Questions</h2>
-  </div>
-
-  <div style={styles.mainContainer}>
-    <div style={styles.cardContainer}>
-
-      {!showPDF && (
-
-        <div style={styles.card}>
-
-          <div style={styles.formGroup}>
-            <label>Course</label>
-
-            <select
-              value={course}
-              onChange={(e)=>{
-                setCourse(e.target.value)
-                setSemester("")
-                setSubject("")
-                setYear("")
-              }}
-            >
-
-              <option value="">Select Course</option>
-
-              {courses.map(c=>(
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-
-            </select>
-          </div>
+}
 
 
-          <div style={styles.formGroup}>
-            <label>Semester</label>
 
-            <select
-              value={semester}
-              onChange={(e)=>{
-                setSemester(e.target.value)
-                setSubject("")
-                setYear("")
-              }}
-              disabled={!course}
-            >
+const handleBack=()=>{
 
-              <option value="">Select Semester</option>
+setShowPDF(false)
+setPdfUrl("")
 
-              {semesters.map(s=>(
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-
-            </select>
-          </div>
+}
 
 
-          <div style={styles.formGroup}>
-            <label>Subject</label>
 
-            <select
-              value={subject}
-              onChange={(e)=>setSubject(e.target.value)}
-              disabled={!semester}
-            >
+// ✅ FIXED DOWNLOAD
+const handleDownload = async (pdf,sub,yr)=>{
 
-              <option value="">Select Subject</option>
+const fileUrl="http://127.0.0.1:8000"+pdf
 
-              {subjects.map(s=>(
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
+try{
 
-            </select>
+const res=await fetch(fileUrl)
+const blob=await res.blob()
 
-          </div>
+const url=window.URL.createObjectURL(blob)
+
+const link=document.createElement("a")
+
+link.href=url
+link.download=`${sub}-${yr}.pdf`
+
+document.body.appendChild(link)
+link.click()
+
+link.remove()
+window.URL.revokeObjectURL(url)
+
+}catch(err){
+
+console.error("Download error",err)
+
+}
+
+}
 
 
-          <div style={styles.formGroup}>
-            <label>Year</label>
 
-            <select
-              value={year}
-              onChange={(e)=>setYear(e.target.value)}
-              disabled={!semester}
-            >
+return(
 
-              <option value="">Select Year</option>
+<div style={styles.wrapper}>
 
-              {years.map(y=>(
-                <option key={y.value} value={y.value}>
-                  {y.label}
-                </option>
-              ))}
+<Navbar/>
 
-            </select>
-
-          </div>
-
-          <button style={styles.submitBtn} onClick={handleGetPYQ}>
-            Get PYQ
-          </button>
-
-        </div>
-
-      )}
-
-      {showPDF && (
-
-        <div style={styles.card}>
-
-          <h3 style={styles.pdfTitle}>
-            {subject} - Semester {semester} ({year})
-          </h3>
-
-          <div style={styles.pdfWrapper}>
-
-            <iframe
-              src={pdfUrl + "#toolbar=0"}
-              title="PYQ PDF"
-              style={styles.pdfFrame}
-            />
-
-          </div>
-
-          <div style={styles.buttonRow}>
-
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={styles.viewBtn}
-            >
-              View
-            </a>
-
-            <button
-              onClick={handleDownload}
-              style={{
-                ...styles.downloadBtn,
-                opacity: downloading ? 0.7 : 1
-              }}
-              disabled={downloading}
-            >
-              {downloading ? "Downloading..." : "Download"}
-            </button>
-
-            <button onClick={handleBack} style={styles.backBtn}>
-              Back
-            </button>
-
-          </div>
-
-        </div>
-
-      )}
-
-    </div>
-  </div>
+<div style={styles.blueBox}>
+<h2 style={styles.blueTitle}>Previous Year Questions</h2>
 </div>
 
-);
-}
+<div style={styles.mainContainer}>
+<div style={styles.cardContainer}>
 
-const styles = {
+
+{/* FORM */}
+
+{pyqCards.length===0 && !showPDF && (
+
+<div style={styles.card}>
+
+<div style={styles.formGroup}>
+<label>Course</label>
+
+<select
+value={course}
+onChange={(e)=>{
+setCourse(e.target.value)
+setSemester("")
+setSubject("")
+setYear("")
+}}
+>
+
+<option value="">Select Course</option>
+
+{courses.map(c=>(
+
+<option key={c.value} value={c.value}>
+{c.label}
+</option>
+
+))}
+
+</select>
+</div>
+
+
+
+<div style={styles.formGroup}>
+<label>Semester</label>
+
+<select
+value={semester}
+onChange={(e)=>{
+setSemester(e.target.value)
+setSubject("")
+setYear("")
+}}
+disabled={!course}
+>
+
+<option value="">Select Semester</option>
+
+{semesters.map(s=>(
+
+<option key={s.value} value={s.value}>
+{s.label}
+</option>
+
+))}
+
+</select>
+</div>
+
+
+
+<div style={styles.formGroup}>
+<label>Subject</label>
+
+<select
+value={subject}
+onChange={(e)=>setSubject(e.target.value)}
+disabled={!semester}
+>
+
+<option value="">Select Subject</option>
+
+{subjects.map(s=>(
+
+<option key={s.value} value={s.value}>
+{s.label}
+</option>
+
+))}
+
+</select>
+
+</div>
+
+
+
+<div style={styles.formGroup}>
+<label>Year</label>
+
+<select
+value={year}
+onChange={(e)=>setYear(e.target.value)}
+disabled={!semester}
+>
+
+<option value="">Select Year</option>
+
+{years.map(y=>(
+
+<option key={y.value} value={y.value}>
+{y.label}
+</option>
+
+))}
+
+</select>
+
+</div>
+
+
+<button style={styles.submitBtn} onClick={handleGetPYQ}>
+Get PYQ
+</button>
+
+</div>
+
+)}
+
+
+
+{/* PYQ CARDS */}
+
+{pyqCards.length>0 && !showPDF && (
+
+<div style={styles.grid}>
+
+{pyqCards.map((p,i)=>(
+
+<div key={i} style={styles.pyqCard}>
+
+<h3>{p.subject}</h3>
+<p>Year {p.year}</p>
+
+<div style={styles.buttonRow}>
+
+<button
+style={styles.viewBtn}
+onClick={()=>{
+
+window.open("http://127.0.0.1:8000"+p.pdf,"_blank")
+
+}}
+>
+View
+</button>
+<button
+style={styles.downloadBtn}
+onClick={()=>handleDownload(p.pdf,p.subject,p.year)}
+>
+Download
+</button>
+
+</div>
+
+</div>
+
+))}
+
+</div>
+
+)}
+
+
+
+{/* PDF VIEWER */}
+
+{showPDF && (
+
+<div style={styles.card}>
+
+<div style={styles.pdfWrapper}>
+
+<iframe
+src={pdfUrl+"#toolbar=0"}
+title="PYQ PDF"
+style={styles.pdfFrame}
+/>
+
+</div>
+
+<div style={styles.buttonRow}>
+
+<button onClick={handleBack} style={styles.backBtn}>
+Back
+</button>
+
+</div>
+
+</div>
+
+)}
+
+</div>
+</div>
+</div>
+
+)
+
+}
+const styles={
 
 wrapper:{
 minHeight:"100vh",
@@ -294,7 +406,7 @@ padding:"30px"
 
 cardContainer:{
 width:"100%",
-maxWidth:"800px"
+maxWidth:"1200px"
 },
 
 card:{
@@ -321,9 +433,22 @@ color:"#fff",
 cursor:"pointer"
 },
 
+grid:{
+display:"grid",
+gridTemplateColumns:"repeat(4,1fr)",
+gap:"20px"
+},
+
+pyqCard:{
+background:"#fff",
+padding:"20px",
+borderRadius:"14px",
+boxShadow:"0 8px 20px rgba(0,0,0,0.08)"
+},
+
 pdfWrapper:{
 width:"100%",
-height:"480px",
+height:"500px",
 border:"1px solid #ddd",
 borderRadius:"12px",
 overflow:"hidden"
@@ -337,20 +462,21 @@ border:"none"
 
 buttonRow:{
 display:"flex",
-gap:"10px"
+gap:"10px",
+marginTop:"10px"
 },
 
 viewBtn:{
-padding:"10px 20px",
-borderRadius:"25px",
+padding:"8px 16px",
+borderRadius:"20px",
+border:"none",
 background:"#6366f1",
-color:"#fff",
-textDecoration:"none"
+color:"#fff"
 },
 
 downloadBtn:{
-padding:"10px 20px",
-borderRadius:"25px",
+padding:"8px 16px",
+borderRadius:"20px",
 border:"none",
 background:"#10b981",
 color:"#fff"
@@ -363,4 +489,5 @@ border:"none",
 background:"#ef4444",
 color:"#fff"
 }
+
 }
