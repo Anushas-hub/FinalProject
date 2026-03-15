@@ -16,41 +16,37 @@ fetch("http://127.0.0.1:8000/api/courses/")
 
 return(
 
-<div style={{padding:"40px"}}>
+<div style={styles.page}>
 
-<h2>Certification Courses</h2>
+<div style={styles.hero}>
+<h1>Certification Courses</h1>
+<p>Upgrade your skills and earn verified certificates</p>
+</div>
 
-<div style={{
-display:"grid",
-gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",
-gap:"20px",
-marginTop:"30px"
-}}>
+<div style={styles.container}>
+
+<div style={styles.grid}>
 
 {courses.map(course=>(
 
-<div key={course.id} style={{
-background:"#fff",
-padding:"20px",
-borderRadius:"12px",
-boxShadow:"0 10px 20px rgba(0,0,0,0.05)"
-}}>
+<div key={course.id} style={styles.card}>
 
 {course.thumbnail && (
 <img
 src={`http://127.0.0.1:8000${course.thumbnail}`}
-style={{width:"100%",borderRadius:"10px"}}
+style={styles.image}
 />
 )}
 
 <h3>{course.title}</h3>
 
-<p>{course.description}</p>
+<p style={styles.desc}>{course.description}</p>
 
 <button
+style={styles.btn}
 onClick={()=>navigate(`/certification/${course.id}`)}
 >
-Start Course
+Start Learning
 </button>
 
 </div>
@@ -61,62 +57,66 @@ Start Course
 
 </div>
 
+</div>
+
 )
 
 }
+
+
+
 const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(135deg,#eef2ff,#f0f9ff,#ecfdf5)"
-  },
 
-  hero: {
-    background: "#4f46e5",
-    color: "#fff",
-    padding: "50px 20px",
-    textAlign: "center",
-  },
+page:{
+minHeight:"100vh",
+background:"linear-gradient(135deg,#eef2ff,#f0f9ff,#ecfdf5)"
+},
 
-  container: {
-    padding: "50px 40px"
-  },
+hero:{
+background:"#4f46e5",
+color:"#fff",
+padding:"60px",
+textAlign:"center"
+},
 
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))",
-    gap: "30px",
-  },
+container:{
+padding:"60px"
+},
 
-  card: {
-    background: "#ffffff",
-    padding: "30px",
-    borderRadius: "18px",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
-    transition: "0.3s ease",
-  },
+grid:{
+display:"grid",
+gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",
+gap:"30px"
+},
 
-  desc: {
-    marginTop: "10px",
-    color: "#475569"
-  },
+card:{
+background:"#fff",
+padding:"25px",
+borderRadius:"16px",
+boxShadow:"0 20px 40px rgba(0,0,0,0.08)"
+},
 
-  meta: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: "20px",
-    fontSize: "14px",
-    color: "#64748b"
-  },
+image:{
+width:"100%",
+borderRadius:"10px",
+marginBottom:"15px"
+},
 
-  btn: {
-    marginTop: "25px",
-    padding: "12px 20px",
-    borderRadius: "10px",
-    border: "none",
-    background: "#4f46e5",
-    color: "#fff",
-    fontWeight: "600",
-    cursor: "pointer",
-    width: "100%"
-  },
-};
+desc:{
+marginTop:"10px",
+color:"#475569"
+},
+
+btn:{
+marginTop:"20px",
+padding:"12px",
+borderRadius:"10px",
+border:"none",
+background:"#4f46e5",
+color:"#fff",
+fontWeight:"600",
+cursor:"pointer",
+width:"100%"
+}
+
+}

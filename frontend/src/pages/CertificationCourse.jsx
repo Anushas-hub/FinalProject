@@ -6,12 +6,10 @@ export default function CertificationCourse() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState("overview");
   const [course, setCourse] = useState(null);
   const [modules, setModules] = useState([]);
-  const [quizzes, setQuizzes] = useState([]);
 
-  const [completedQuizzes, setCompletedQuizzes] = useState(0);
+  const [completedQuizzes, setCompletedQuizzes] = useState([]);
 
   useEffect(() => {
 
@@ -21,7 +19,6 @@ export default function CertificationCourse() {
 
         setCourse(data)
         setModules(data.modules || [])
-        setQuizzes(data.quizzes || [])
 
       })
       .catch(err => console.log(err))
@@ -29,21 +26,29 @@ export default function CertificationCourse() {
   }, [id])
 
 
-  const totalQuizzes = quizzes.length || 1
-  const progress = (completedQuizzes / totalQuizzes) * 100
-  const isEligible = progress >= 70
+  const totalQuizzes = modules.reduce(
+    (total, m) => total + (m.quizzes?.length || 0),
+    0
+  )
+
+  const progress =
+    totalQuizzes === 0
+      ? 0
+      : (completedQuizzes.length / totalQuizzes) * 100
+
+  const certificateUnlocked = progress >= 70
+
 
   return (
 
     <div style={styles.page}>
 
-      {/* HEADER */}
-
       <div style={styles.header}>
 
-        <h1>{course ? course.title : `Certification Course #${id}`}</h1>
+        <h1>{course?.title || "Certification Course"}</h1>
 
         <div style={styles.progressWrapper}>
+
           <div style={styles.progressBar}>
             <div
               style={{
@@ -60,154 +65,33 @@ export default function CertificationCourse() {
       </div>
 
 
-      {/* TABS */}
+      <div style={styles.courseLayout}>
 
-      <div style={styles.tabs}>
+        {/* SIDEBAR */}
 
-        <button
-          style={activeTab === "overview" ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab("overview")}
-        >
-          Overview
-        </button>
+        <div style={styles.sidebar}>
 
-        <button
-          style={activeTab === "modules" ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab("modules")}
-        >
-          Modules
-        </button>
+          <h3>Course Navigation</h3>
 
-        <button
-          style={activeTab === "quizzes" ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab("quizzes")}
-        >
-          Quizzes
-        </button>
+          {modules.map((module, index) => (
 
-        <button
-          style={activeTab === "certification" ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab("certification")}
-        >
-          Certification
-        </button>
+            <div key={module.id}>
 
-      </div>
+              <div style={styles.moduleTitle}>
+                {module.title}
+              </div>
 
-
-      {/* TAB CONTENT */}
-
-      <div style={styles.content}>
-
-
-        {/* OVERVIEW */}
-
-        {activeTab === "overview" && course && (
-
-          <div>
-
-            <h2>Course Overview</h2>
-
-            <p>{course.description}</p>
-
-          </div>
-
-        )}
-
-
-
-        {/* MODULES */}
-
-        {activeTab === "modules" && (
-
-          <div>
-
-            <h2>Modules</h2>
-
-            <div style={styles.grid}>
-
-              {modules.length === 0 ? (
-
-                <p>No modules available.</p>
-
-              ) : (
-
-                modules.map((m) => (
-
-                  <div key={m.id} style={styles.card}>
-
-                    <h3>{m.title}</h3>
-
-                    <p>{m.content}</p>
-
-                  </div>
-
-                ))
-
-              )}
+              <div style={styles.assessment}>
+                Assessment {index + 1}
+              </div>
 
             </div>
 
-          </div>
+          ))}
 
-        )}
+          <div style={{ marginTop: "40px" }}>
 
-
-
-        {/* QUIZZES */}
-
-        {activeTab === "quizzes" && (
-
-          <div>
-
-            <h2>Quizzes</h2>
-
-            <div style={styles.grid}>
-
-              {quizzes.length === 0 ? (
-
-                <p>No quizzes available.</p>
-
-              ) : (
-
-                quizzes.map((q) => (
-
-                  <div key={q.id} style={styles.card}>
-
-                    <h3>{q.title}</h3>
-
-                    <button
-                      style={styles.quizBtn}
-                      onClick={() =>
-                        navigate(`/quiz/${q.id}`)
-                      }
-                    >
-                      Attempt Quiz
-                    </button>
-
-                  </div>
-
-                ))
-
-              )}
-
-            </div>
-
-          </div>
-
-        )}
-
-
-
-        {/* CERTIFICATION */}
-
-        {activeTab === "certification" && (
-
-          <div style={{ textAlign: "center" }}>
-
-            <h2>Certification</h2>
-
-            {isEligible ? (
+            {certificateUnlocked ? (
 
               <button
                 style={styles.certBtn}
@@ -215,18 +99,62 @@ export default function CertificationCourse() {
                   navigate(`/certification/${id}/success`)
                 }
               >
-                🎉 Get Certified
+                Get Certificate
               </button>
 
             ) : (
 
-              <p>Complete at least 70% quizzes to unlock certificate.</p>
+              <p style={{ fontSize: "14px" }}>
+                Complete 70% quizzes to unlock certificate
+              </p>
 
             )}
 
           </div>
 
-        )}
+        </div>
+
+
+        {/* MAIN PAGE */}
+
+        <div style={styles.content}>
+
+          {modules.map((module, moduleIndex) => (
+
+            <div key={module.id} style={styles.moduleSection}>
+
+              <h2>{module.title}</h2>
+
+              <p>{module.content}</p>
+
+              <h3 style={{ marginTop: "25px" }}>
+                Assessment {moduleIndex + 1}
+              </h3>
+
+              {module.quizzes?.map((quiz) => (
+
+                <div key={quiz.id} style={styles.quizCard}>
+
+                  <h4>{quiz.title}</h4>
+
+                  <button
+                    style={styles.quizBtn}
+                    onClick={() =>
+                      navigate(`/certification-quiz/${quiz.id}`)
+                    }
+                  >
+                    Attempt Quiz
+                  </button>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          ))}
+
+        </div>
 
       </div>
 
@@ -246,13 +174,13 @@ const styles = {
   },
 
   header: {
-    padding: "40px",
+    padding: "30px",
     background: "#4f46e5",
     color: "#fff",
   },
 
   progressWrapper: {
-    marginTop: "15px",
+    marginTop: "10px",
   },
 
   progressBar: {
@@ -268,47 +196,47 @@ const styles = {
     borderRadius: "10px",
   },
 
-  tabs: {
+  courseLayout: {
     display: "flex",
-    gap: "20px",
-    padding: "20px 40px",
+  },
+
+  sidebar: {
+    width: "260px",
     background: "#fff",
-    borderBottom: "1px solid #eee",
+    padding: "25px",
+    borderRight: "1px solid #eee",
+    minHeight: "80vh",
   },
 
-  tab: {
-    padding: "10px 20px",
-    border: "none",
-    background: "transparent",
-    cursor: "pointer",
-    fontWeight: "500",
+  moduleTitle: {
+    fontWeight: "600",
+    marginTop: "15px",
   },
 
-  activeTab: {
-    padding: "10px 20px",
-    border: "none",
-    background: "#4f46e5",
-    color: "#fff",
-    borderRadius: "8px",
-    cursor: "pointer",
+  assessment: {
+    marginLeft: "10px",
+    fontSize: "14px",
+    color: "#6b7280",
   },
 
   content: {
+    flex: 1,
     padding: "40px",
   },
 
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-    gap: "20px",
-    marginTop: "20px",
+  moduleSection: {
+    background: "#fff",
+    padding: "25px",
+    borderRadius: "12px",
+    marginBottom: "30px",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
   },
 
-  card: {
-    background: "#fff",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 10px 20px rgba(0,0,0,0.05)",
+  quizCard: {
+    background: "#f9fafb",
+    padding: "15px",
+    borderRadius: "10px",
+    marginTop: "15px",
   },
 
   quizBtn: {
@@ -323,12 +251,12 @@ const styles = {
 
   certBtn: {
     marginTop: "20px",
-    padding: "15px 30px",
+    padding: "15px",
     background: "green",
     color: "#fff",
     border: "none",
     borderRadius: "8px",
-    fontSize: "16px",
+    width: "100%",
     cursor: "pointer",
   },
 

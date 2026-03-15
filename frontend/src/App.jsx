@@ -11,6 +11,7 @@ import HomeStudyMaterial from "./pages/HomeStudyMaterial";
 import AuthorDashboard from "./pages/AuthorDashboard";
 import PreviousYearQuestions from "./pages/PreviousYearQuestions";
 import TopicContent from "./pages/TopicContent";
+import CertificationQuiz from "./pages/CertificationQuiz";
 
 import ExploreCertification from "./pages/ExploreCertification";
 import CertificationResults from "./pages/CertificationResults";
@@ -24,6 +25,7 @@ function App() {
     <Routes>
 
       {/* CERTIFICATION FLOW */}
+      <Route path="/certification-quiz/:id" element={<CertificationQuiz />} /> {/* 🔥 ADD THIS */}
       <Route path="/explore-certification" element={<ExploreCertification />} />
       <Route path="/certifications" element={<CertificationResults />} /> {/* 🔥 ADD THIS */}
       <Route path="/certification/:id" element={<CertificationCourse />} />

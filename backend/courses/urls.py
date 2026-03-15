@@ -1,7 +1,12 @@
 from django.urls import path
-from .views import courses_list, course_detail
+from . import views
 
 urlpatterns = [
-    path("courses/", courses_list),
-    path("courses/<int:id>/", course_detail),
+
+    path("courses/", views.courses_list),
+    path("courses/<int:id>/", views.course_detail),
+
+    # Certification Quiz API
+    path("course-quiz/<int:id>/", views.course_quiz_detail),
+
 ]
