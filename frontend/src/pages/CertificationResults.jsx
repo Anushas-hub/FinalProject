@@ -1,74 +1,69 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function CertificationResults() {
-  const navigate = useNavigate();
-  const location = useLocation();
+export default function CertificationResults(){
 
-  const query = new URLSearchParams(location.search);
-  const search = query.get("search") || "";
+const [courses,setCourses] = useState([])
+const navigate = useNavigate()
 
-  const courses = [
-    {
-      id: 1,
-      title: "Data Structures Certification",
-      modules: 6,
-      quizzes: 4,
-      description: "Master core data structures with real quizzes."
-    },
-    {
-      id: 2,
-      title: "Web Development Certification",
-      modules: 6,
-      quizzes: 4,
-      description: "Frontend + Backend + Deployment complete roadmap."
-    },
-  ];
+useEffect(()=>{
 
-  const filtered = courses.filter((course) =>
-    course.title.toLowerCase().includes(search.toLowerCase())
-  );
+fetch("http://127.0.0.1:8000/api/courses/")
+.then(res=>res.json())
+.then(data=>setCourses(data))
 
-  return (
-    <div style={styles.page}>
-      <div style={styles.hero}>
-        <h1>Certification Courses</h1>
-        <p>Search Results for "{search}"</p>
-      </div>
+},[])
 
-      <div style={styles.container}>
-        {filtered.length === 0 ? (
-          <p style={{ textAlign: "center" }}>
-            No certification course available.
-          </p>
-        ) : (
-          <div style={styles.grid}>
-            {filtered.map((course) => (
-              <div key={course.id} style={styles.card}>
-                <h2>{course.title}</h2>
-                <p style={styles.desc}>{course.description}</p>
+return(
 
-                <div style={styles.meta}>
-                  <span>📘 {course.modules} Modules</span>
-                  <span>🧠 {course.quizzes} Quizzes</span>
-                </div>
+<div style={{padding:"40px"}}>
 
-                <button
-                  style={styles.btn}
-                  onClick={() =>
-                    navigate(`/certification/${course.id}`)
-                  }
-                >
-                  Start Certification →
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+<h2>Certification Courses</h2>
+
+<div style={{
+display:"grid",
+gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",
+gap:"20px",
+marginTop:"30px"
+}}>
+
+{courses.map(course=>(
+
+<div key={course.id} style={{
+background:"#fff",
+padding:"20px",
+borderRadius:"12px",
+boxShadow:"0 10px 20px rgba(0,0,0,0.05)"
+}}>
+
+{course.thumbnail && (
+<img
+src={`http://127.0.0.1:8000${course.thumbnail}`}
+style={{width:"100%",borderRadius:"10px"}}
+/>
+)}
+
+<h3>{course.title}</h3>
+
+<p>{course.description}</p>
+
+<button
+onClick={()=>navigate(`/certification/${course.id}`)}
+>
+Start Course
+</button>
+
+</div>
+
+))}
+
+</div>
+
+</div>
+
+)
+
 }
-
 const styles = {
   page: {
     minHeight: "100vh",

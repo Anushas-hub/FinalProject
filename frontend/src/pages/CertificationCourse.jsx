@@ -1,35 +1,69 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function CertificationCourse() {
+
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("overview");
+  const [course, setCourse] = useState(null);
+  const [modules, setModules] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
 
-  const completedQuizzes = 3;
-  const totalQuizzes = 4;
-  const progress = (completedQuizzes / totalQuizzes) * 100;
-  const isEligible = progress >= 70;
+  const [completedQuizzes, setCompletedQuizzes] = useState(0);
+
+  useEffect(() => {
+
+    fetch(`http://127.0.0.1:8000/api/courses/${id}/`)
+      .then(res => res.json())
+      .then(data => {
+
+        setCourse(data)
+        setModules(data.modules || [])
+        setQuizzes(data.quizzes || [])
+
+      })
+      .catch(err => console.log(err))
+
+  }, [id])
+
+
+  const totalQuizzes = quizzes.length || 1
+  const progress = (completedQuizzes / totalQuizzes) * 100
+  const isEligible = progress >= 70
 
   return (
+
     <div style={styles.page}>
+
       {/* HEADER */}
+
       <div style={styles.header}>
-        <h1>Certification Course #{id}</h1>
+
+        <h1>{course ? course.title : `Certification Course #${id}`}</h1>
 
         <div style={styles.progressWrapper}>
           <div style={styles.progressBar}>
             <div
-              style={{ ...styles.progressFill, width: `${progress}%` }}
+              style={{
+                ...styles.progressFill,
+                width: `${progress}%`
+              }}
             />
           </div>
+
           <span>{Math.round(progress)}% Completed</span>
+
         </div>
+
       </div>
 
+
       {/* TABS */}
+
       <div style={styles.tabs}>
+
         <button
           style={activeTab === "overview" ? styles.activeTab : styles.tab}
           onClick={() => setActiveTab("overview")}
@@ -57,61 +91,124 @@ export default function CertificationCourse() {
         >
           Certification
         </button>
+
       </div>
 
+
       {/* TAB CONTENT */}
+
       <div style={styles.content}>
 
-        {activeTab === "overview" && (
+
+        {/* OVERVIEW */}
+
+        {activeTab === "overview" && course && (
+
           <div>
+
             <h2>Course Overview</h2>
-            <p>
-              This certification covers 6 modules and 4 quizzes.
-              Complete at least 70% to unlock your certificate.
-            </p>
+
+            <p>{course.description}</p>
+
           </div>
+
         )}
+
+
+
+        {/* MODULES */}
 
         {activeTab === "modules" && (
+
           <div>
+
             <h2>Modules</h2>
+
             <div style={styles.grid}>
-              {[1,2,3,4,5,6].map((m) => (
-                <div key={m} style={styles.card}>
-                  <h3>Module {m}</h3>
-                  <p>Topic explanation + study material.</p>
-                </div>
-              ))}
+
+              {modules.length === 0 ? (
+
+                <p>No modules available.</p>
+
+              ) : (
+
+                modules.map((m) => (
+
+                  <div key={m.id} style={styles.card}>
+
+                    <h3>{m.title}</h3>
+
+                    <p>{m.content}</p>
+
+                  </div>
+
+                ))
+
+              )}
+
             </div>
+
           </div>
+
         )}
+
+
+
+        {/* QUIZZES */}
 
         {activeTab === "quizzes" && (
+
           <div>
+
             <h2>Quizzes</h2>
+
             <div style={styles.grid}>
-              {[1,2,3,4].map((q) => (
-                <div key={q} style={styles.card}>
-                  <h3>Quiz {q}</h3>
-                  <button
-                    style={styles.quizBtn}
-                    onClick={() =>
-                      navigate(`/certification/${id}/quiz/${q}`)
-                    }
-                  >
-                    Attempt Quiz
-                  </button>
-                </div>
-              ))}
+
+              {quizzes.length === 0 ? (
+
+                <p>No quizzes available.</p>
+
+              ) : (
+
+                quizzes.map((q) => (
+
+                  <div key={q.id} style={styles.card}>
+
+                    <h3>{q.title}</h3>
+
+                    <button
+                      style={styles.quizBtn}
+                      onClick={() =>
+                        navigate(`/quiz/${q.id}`)
+                      }
+                    >
+                      Attempt Quiz
+                    </button>
+
+                  </div>
+
+                ))
+
+              )}
+
             </div>
+
           </div>
+
         )}
 
+
+
+        {/* CERTIFICATION */}
+
         {activeTab === "certification" && (
+
           <div style={{ textAlign: "center" }}>
+
             <h2>Certification</h2>
 
             {isEligible ? (
+
               <button
                 style={styles.certBtn}
                 onClick={() =>
@@ -120,18 +217,29 @@ export default function CertificationCourse() {
               >
                 🎉 Get Certified
               </button>
+
             ) : (
-              <p>Complete at least 70% to unlock certificate.</p>
+
+              <p>Complete at least 70% quizzes to unlock certificate.</p>
+
             )}
+
           </div>
+
         )}
 
       </div>
+
     </div>
-  );
+
+  )
+
 }
 
+
+
 const styles = {
+
   page: {
     minHeight: "100vh",
     background: "#f8fafc",
@@ -223,4 +331,5 @@ const styles = {
     fontSize: "16px",
     cursor: "pointer",
   },
-};
+
+}
