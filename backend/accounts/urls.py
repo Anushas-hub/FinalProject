@@ -10,7 +10,8 @@ from .views import (
     get_viewed_topics,
     save_quiz_attempt,
     get_attempted_quizzes,
-    student_analytics
+    student_analytics,
+    submit_feedback
 )
 
 urlpatterns = [
@@ -33,7 +34,8 @@ urlpatterns = [
 
     path('attempted-quizzes/<str:username>/', get_attempted_quizzes),
 
-    # NEW ANALYTICS API
-
     path('student-analytics/<str:username>/', student_analytics),
+
+    # NEW FEEDBACK API
+    path('submit-feedback/', submit_feedback),
 ]

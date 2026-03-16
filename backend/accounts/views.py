@@ -2,7 +2,10 @@ from django.contrib.auth import authenticate, get_user_model
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import Feedback
 from .models import Subject, Module, Quiz, Question, ViewedTopic, QuizAttempt
 
 User = get_user_model()
@@ -294,3 +297,22 @@ def student_analytics(request, username):
             "quizzes_attempted": 0,
             "certifications": 0
         })
+        
+@csrf_exempt
+def submit_feedback(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+
+        username = data.get("username", "")
+        role = data.get("role", "")
+        message = data.get("message", "")
+
+        Feedback.objects.create(
+            username=username,
+            role=role,
+            message=message
+        )
+
+        return JsonResponse({"status": "success"})
+
+    return JsonResponse({"error": "Invalid request"})

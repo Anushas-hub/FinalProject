@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 
 export default function Reference() {
+
   const navigate = useNavigate();
 
   return (
     <div style={styles.container}>
+
       {/* Go Back */}
-      <button onClick={() => navigate("/")} style={styles.backBtn}>
+      <button onClick={() => navigate(-1)} style={styles.backBtn}>
         ← Go Back
       </button>
 
@@ -31,49 +33,49 @@ export default function Reference() {
           usefulness for students.
         </p>
       </div>
+
     </div>
   );
 }
 
 const styles = {
-  container: {
-    maxWidth: "800px",
-    margin: "40px auto",
-    padding: "20px",
-    color: "#333",
-    lineHeight: "1.7",
+  container:{
+    maxWidth:"800px",
+    margin:"40px auto",
+    padding:"20px",
+    color:"#333",
+    lineHeight:"1.7"
   },
-  backBtn: {
-  padding: "12px 20px",
-  borderRadius: "20px",
-  border: "none",
-  background: "#ffffff",
-  fontWeight: "600",
-  cursor: "pointer",
-  boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-  marginBottom: "20px",
+ backBtn:{
+  background:"none",
+  border:"none",
+  color:"#2563eb",
+  fontSize:"16px",
+  cursor:"pointer",
+  marginBottom:"20px",
+  fontWeight:"500"
 },
-  title: {
-    fontSize: "30px",
-    marginBottom: "15px",
+  title:{
+    fontSize:"30px",
+    marginBottom:"15px"
   },
-  text: {
-    fontSize: "16px",
-    marginBottom: "20px",
+  text:{
+    fontSize:"16px",
+    marginBottom:"20px"
   },
-  card: {
-    background: "#f5f7fa",
-    padding: "25px",
-    borderRadius: "10px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+  card:{
+    background:"#f5f7fa",
+    padding:"25px",
+    borderRadius:"10px",
+    boxShadow:"0 4px 10px rgba(0,0,0,0.05)"
   },
-  list: {
-    paddingLeft: "20px",
-    marginBottom: "15px",
+  list:{
+    paddingLeft:"20px",
+    marginBottom:"15px"
   },
-  note: {
-    fontSize: "15px",
-    color: "#555",
-    marginTop: "10px",
-  },
+  note:{
+    fontSize:"15px",
+    color:"#555",
+    marginTop:"10px"
+  }
 };

@@ -100,3 +100,12 @@ class QuizAttempt(models.Model):
 
     def __str__(self):
         return f"{self.user.username} attempted {self.quiz.title}"
+
+class Feedback(models.Model):
+    username = models.CharField(max_length=150, blank=True)
+    role = models.CharField(max_length=50, blank=True)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.username} - {self.created_at}"
