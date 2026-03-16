@@ -7,10 +7,26 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
+/* LEFT SIDE (LOGO + TEXT) */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .nav-left h2 {
   color: #4f46e5;
   margin: 0;
   font-weight: 700;
+}
+
+/* LOGO IMAGE */
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .nav-center {
@@ -21,7 +37,7 @@
 .nav-center a {
   text-decoration: none;
   color: #1e293b;
-  font-weight: 600;   /* same weight */
+  font-weight: 600;
   font-size: 15px;
   padding: 12px 24px;
   border-radius: 20px;
@@ -49,6 +65,7 @@
 .nav-right .nav-btn:hover {
   transform: translateY(-2px);
 }
+
 /* PROFILE CONTAINER */
 .profile-container {
   position: relative;
@@ -61,11 +78,11 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: #4f46e5;   /* Blue */
+  background: #4f46e5;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;        /* White Letter */
+  color: #ffffff;
   font-weight: 600;
   font-size: 18px;
   cursor: pointer;
@@ -110,7 +127,7 @@
 
 /* LOGOUT BUTTON */
 .logout-btn {
-  background: #ef4444 !important;  /* Red */
+  background: #ef4444 !important;
   color: #ffffff !important;
 }
 
@@ -129,6 +146,7 @@
     transform: translateY(0);
   }
 }
+
 .dashboard-btn {
   padding: 10px 25px;
   background: #4f46e5;
