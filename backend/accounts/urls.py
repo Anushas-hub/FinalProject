@@ -5,7 +5,9 @@ from .views import (
     get_subjects,
     get_modules,
     get_quizzes,
-    get_quiz
+    get_quiz,
+    save_viewed_topic,
+    get_viewed_topics
 )
 
 urlpatterns = [
@@ -15,7 +17,12 @@ urlpatterns = [
 
     path('subjects/', get_subjects),
     path('subjects/<int:subject_id>/modules/', get_modules),
+
     path('modules/<int:module_id>/quizzes/', get_quizzes),
 
     path('quizzes/<int:id>/', get_quiz),
+
+    path('save-viewed-topic/', save_viewed_topic),
+
+    path('viewed-topics/<str:username>/', get_viewed_topics),
 ]

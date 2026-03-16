@@ -12,7 +12,8 @@ function TopicContent() {
   const [quizzes, setQuizzes] = useState([]);
   const [subjectTitle, setSubjectTitle] = useState("");
 
-  // Load Modules
+  const user = localStorage.getItem("user");
+
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/subjects/${id}/modules/`)
       .then((res) => res.json())
@@ -27,7 +28,6 @@ function TopicContent() {
       .catch((err) => console.error(err));
   }, [id]);
 
-  // Load Quizzes
   useEffect(() => {
     if (activeModule) {
       fetch(`http://127.0.0.1:8000/api/modules/${activeModule.id}/quizzes/`)
@@ -36,6 +36,26 @@ function TopicContent() {
         .catch((err) => console.error(err));
     }
   }, [activeModule]);
+
+  // SAVE VIEW HISTORY
+  useEffect(() => {
+
+    if (user) {
+
+      fetch("http://127.0.0.1:8000/api/save-viewed-topic/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: user,
+          subject_id: id
+        })
+      });
+
+    }
+
+  }, [id, user]);
 
   return (
     <>
@@ -49,7 +69,6 @@ function TopicContent() {
 
         <div className="topic-body">
 
-          {/* Sidebar */}
           <div className="module-sidebar">
             {modules.map((module) => (
               <button
@@ -62,7 +81,6 @@ function TopicContent() {
             ))}
           </div>
 
-          {/* Content */}
           <div className="module-content">
             {activeModule ? (
               <p>{activeModule.content}</p>
@@ -73,7 +91,6 @@ function TopicContent() {
 
         </div>
 
-        {/* Quiz Section */}
         <div className="quiz-section">
           <h2>Related Quizzes</h2>
 

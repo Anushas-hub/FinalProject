@@ -65,3 +65,19 @@ class Question(models.Model):
 
     def __str__(self):
         return self.question
+
+
+# ---------------- VIEWED TOPICS (HISTORY) ----------------
+
+class ViewedTopic(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+
+    viewed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-viewed_at"]
+
+    def __str__(self):
+        return f"{self.user.username} viewed {self.subject.title}"

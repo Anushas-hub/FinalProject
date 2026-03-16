@@ -8,17 +8,19 @@ export default function StudentDashboard() {
 
   const [activeSection, setActiveSection] = useState("home");
 
-  /* SEARCH STATES */
   const [searchTerm, setSearchTerm] = useState("");
   const [subjects, setSubjects] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
+
+  /* VIEWED TOPICS STATE */
+  const [viewedTopics, setViewedTopics] = useState([]);
 
   useEffect(() => {
     if (!user) navigate("/login");
     if (role !== "student") navigate("/");
   }, [user, role, navigate]);
 
-  /* FETCH SUBJECTS (same as homepage) */
+  /* FETCH SUBJECTS */
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/subjects/")
       .then((res) => res.json())
@@ -26,12 +28,19 @@ export default function StudentDashboard() {
       .catch((err) => console.error(err));
   }, []);
 
+  /* FETCH VIEWED TOPICS */
+  const fetchViewedTopics = () => {
+    fetch(`http://127.0.0.1:8000/api/viewed-topics/${user}/`)
+      .then((res) => res.json())
+      .then((data) => setViewedTopics(data))
+      .catch((err) => console.error(err));
+  };
+
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");
   };
 
-  /* SEARCH INPUT CHANGE */
   const handleChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -47,14 +56,12 @@ export default function StudentDashboard() {
     }
   };
 
-  /* SUGGESTION CLICK */
   const handleSuggestionClick = (id, title) => {
     setSearchTerm(title);
     setSuggestions([]);
     navigate(`/study-material/${id}`);
   };
 
-  /* SEARCH BUTTON LOGIC (same as homepage) */
   const handleSearch = () => {
     if (!searchTerm.trim()) return;
 
@@ -117,7 +124,10 @@ export default function StudentDashboard() {
 
           <button
             style={styles.menuBtn}
-            onClick={() => setActiveSection("viewed")}
+            onClick={() => {
+              setActiveSection("viewed");
+              fetchViewedTopics();
+            }}
           >
             Viewed Topics
           </button>
@@ -168,7 +178,6 @@ export default function StudentDashboard() {
               </button>
             </div>
 
-            {/* SUGGESTIONS */}
             {suggestions.length > 0 && (
               <div style={styles.suggestionBox}>
                 {suggestions.map((item) => (
@@ -209,8 +218,40 @@ export default function StudentDashboard() {
               </>
             )}
 
+            {/* VIEWED TOPICS */}
+
             {activeSection === "viewed" && (
-              <h2 style={styles.heading}>Your Viewed Topics</h2>
+              <>
+                <h2 style={styles.heading}>Your Viewed Topics</h2>
+
+                <div style={styles.cardGrid}>
+
+                  {viewedTopics.length === 0 && (
+                    <p>No viewed topics yet.</p>
+                  )}
+
+                  {viewedTopics.map((topic, index) => (
+
+                    <div
+                      key={index}
+                      style={styles.card}
+                      onClick={() =>
+                        navigate(`/study-material/${topic.subject_id}`)
+                      }
+                    >
+                      <h4>{topic.title}</h4>
+
+                      <p>
+                        Last viewed:{" "}
+                        {new Date(topic.viewed_at).toLocaleDateString()}
+                      </p>
+
+                    </div>
+
+                  ))}
+
+                </div>
+              </>
             )}
 
             {activeSection === "quiz" && (
@@ -403,5 +444,6 @@ const styles = {
     padding: "25px",
     borderRadius: "16px",
     boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+    cursor: "pointer"
   },
 };

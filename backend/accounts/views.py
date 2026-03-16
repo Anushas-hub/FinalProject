@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, get_user_model
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Subject, Module, Quiz, Question
+from .models import Subject, Module, Quiz, Question, ViewedTopic
 
 User = get_user_model()
 
@@ -149,3 +149,51 @@ def get_quiz(request, id):
         })
 
     return Response(data)
+
+
+# ---------------- SAVE VIEWED TOPIC ----------------
+
+@api_view(['POST'])
+def save_viewed_topic(request):
+
+    username = request.data.get("username")
+    subject_id = request.data.get("subject_id")
+
+    try:
+        user = User.objects.get(username=username)
+        subject = Subject.objects.get(id=subject_id)
+
+        ViewedTopic.objects.update_or_create(
+            user=user,
+            subject=subject
+        )
+
+        return Response({"message": "Viewed topic saved"})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+# ---------------- GET USER HISTORY ----------------
+
+@api_view(['GET'])
+def get_viewed_topics(request, username):
+
+    try:
+        user = User.objects.get(username=username)
+
+        history = ViewedTopic.objects.filter(user=user)
+
+        data = []
+
+        for item in history:
+            data.append({
+                "subject_id": item.subject.id,
+                "title": item.subject.title,
+                "viewed_at": item.viewed_at
+            })
+
+        return Response(data)
+
+    except:
+        return Response([])
