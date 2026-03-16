@@ -7,6 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import Feedback
 from .models import Subject, Module, Quiz, Question, ViewedTopic, QuizAttempt
+from .models import AuthorProfile
+from django.core.files.storage import default_storage
 
 User = get_user_model()
 
@@ -316,3 +318,62 @@ def submit_feedback(request):
         return JsonResponse({"status": "success"})
 
     return JsonResponse({"error": "Invalid request"})
+
+# ---------------- GET AUTHOR PROFILE ----------------
+
+@api_view(['GET'])
+def get_author_profile(request, username):
+
+    try:
+
+        user = User.objects.get(username=username)
+
+        profile, created = AuthorProfile.objects.get_or_create(user=user)
+
+        image_url = None
+        if profile.profile_image:
+            image_url = request.build_absolute_uri(profile.profile_image.url)
+
+        data = {
+            "name": profile.name,
+            "bio": profile.bio,
+            "education": profile.education,
+            "experience": profile.experience,
+            "skills": profile.skills,
+            "profile_image": image_url
+        }
+
+        return Response(data)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+# ---------------- SAVE AUTHOR PROFILE ----------------
+
+@api_view(['POST'])
+def save_author_profile(request):
+
+    username = request.data.get("username")
+
+    try:
+
+        user = User.objects.get(username=username)
+
+        profile, created = AuthorProfile.objects.get_or_create(user=user)
+
+        profile.name = request.data.get("name", "")
+        profile.bio = request.data.get("bio", "")
+        profile.education = request.data.get("education", "")
+        profile.experience = request.data.get("experience", "")
+        profile.skills = request.data.get("skills", "")
+
+        if "profile_image" in request.FILES:
+            profile.profile_image = request.FILES["profile_image"]
+
+        profile.save()
+
+        return Response({"message": "Profile saved successfully"})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
