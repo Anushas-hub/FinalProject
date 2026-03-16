@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from "recharts";
 
 export default function StudentDashboard() {
+
   const navigate = useNavigate();
   const user = localStorage.getItem("user");
   const role = localStorage.getItem("role");
@@ -15,10 +24,13 @@ export default function StudentDashboard() {
   const [viewedTopics, setViewedTopics] = useState([]);
   const [attemptedQuizzes, setAttemptedQuizzes] = useState([]);
 
+  const [analytics, setAnalytics] = useState(null);
+
   useEffect(() => {
     if (!user) navigate("/login");
     if (role !== "student") navigate("/");
   }, [user, role, navigate]);
+
 
   /* FETCH SUBJECTS */
 
@@ -29,6 +41,7 @@ export default function StudentDashboard() {
       .catch((err) => console.error(err));
   }, []);
 
+
   /* FETCH VIEWED TOPICS */
 
   const fetchViewedTopics = () => {
@@ -37,6 +50,7 @@ export default function StudentDashboard() {
       .then((data) => setViewedTopics(data))
       .catch((err) => console.error(err));
   };
+
 
   /* FETCH ATTEMPTED QUIZZES */
 
@@ -47,25 +61,43 @@ export default function StudentDashboard() {
       .catch((err) => console.error(err));
   };
 
+
+  /* FETCH ANALYTICS */
+
+  const fetchAnalytics = () => {
+
+    fetch(`http://127.0.0.1:8000/api/student-analytics/${user}/`)
+      .then((res) => res.json())
+      .then((data) => setAnalytics(data))
+      .catch((err) => console.error(err));
+
+  };
+
+
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");
   };
 
+
   const handleChange = (e) => {
+
     const value = e.target.value;
     setSearchTerm(value);
 
     if (value.length > 0) {
+
       const filtered = subjects.filter((subject) =>
         subject.title.toLowerCase().includes(value.toLowerCase())
       );
 
       setSuggestions(filtered);
+
     } else {
       setSuggestions([]);
     }
   };
+
 
   const handleSuggestionClick = (id, title) => {
     setSearchTerm(title);
@@ -73,7 +105,9 @@ export default function StudentDashboard() {
     navigate(`/study-material/${id}`);
   };
 
+
   const handleSearch = () => {
+
     if (!searchTerm.trim()) return;
 
     const text = searchTerm.toLowerCase();
@@ -86,6 +120,7 @@ export default function StudentDashboard() {
       text.includes("previous year") ||
       text.includes("question")
     ) {
+
       let subject = text
         .replace("pyq", "")
         .replace("previous year", "")
@@ -96,19 +131,35 @@ export default function StudentDashboard() {
       navigate(`/previous-year-questions?subject=${subject}&year=${year}`);
 
       return;
+
     }
 
     navigate(`/study-material?search=${searchTerm}`);
   };
 
+
   if (!user || role !== "student") return null;
 
+
+  const chartData = analytics
+    ? [
+        { name: "Topics Viewed", value: analytics.topics_viewed },
+        { name: "Quizzes Attempted", value: analytics.quizzes_attempted },
+        { name: "Certifications", value: analytics.certifications }
+      ]
+    : [];
+
+  const COLORS = ["#4f46e5", "#06b6d4", "#22c55e"];
+
+
   return (
+
     <div style={styles.page}>
-      
+
       {/* HERO */}
 
       <div style={styles.hero}>
+
         <div>
           <h1 style={styles.heroTitle}>Student Dashboard</h1>
           <p style={styles.heroSubtitle}>SmartStudy</p>
@@ -120,20 +171,28 @@ export default function StudentDashboard() {
         >
           Home
         </button>
+
       </div>
+
 
       <div style={styles.wrapper}>
 
         {/* SIDEBAR */}
 
         <div style={styles.sidebar}>
+
           <div style={styles.profileBox}>
+
             <div style={styles.avatar}>
               {user.charAt(0).toUpperCase()}
             </div>
+
             <h3 style={{ marginTop: "10px" }}>{user}</h3>
+
             <p style={styles.roleText}>Student Account</p>
+
           </div>
+
 
           <button
             style={styles.menuBtn}
@@ -145,6 +204,7 @@ export default function StudentDashboard() {
             Viewed Topics
           </button>
 
+
           <button
             style={styles.menuBtn}
             onClick={() => {
@@ -155,6 +215,7 @@ export default function StudentDashboard() {
             Attempted Quizzes
           </button>
 
+
           <button
             style={styles.menuBtn}
             onClick={() => setActiveSection("cert")}
@@ -162,17 +223,24 @@ export default function StudentDashboard() {
             Certifications
           </button>
 
+
           <button
             style={styles.menuBtn}
-            onClick={() => setActiveSection("leaderboard")}
+            onClick={() => {
+              setActiveSection("leaderboard");
+              fetchAnalytics();
+            }}
           >
             Leaderboard
           </button>
 
+
           <button style={styles.logoutBtn} onClick={handleLogout}>
             Logout
           </button>
+
         </div>
+
 
         {/* MAIN */}
 
@@ -183,6 +251,7 @@ export default function StudentDashboard() {
           <div style={{position:"relative", maxWidth:"800px", margin:"0 auto 40px auto"}}>
 
             <div style={styles.searchSection}>
+
               <input
                 type="text"
                 placeholder="Search topics, study materials, courses..."
@@ -194,11 +263,16 @@ export default function StudentDashboard() {
               <button style={styles.searchBtn} onClick={handleSearch}>
                 Search
               </button>
+
             </div>
 
+
             {suggestions.length > 0 && (
+
               <div style={styles.suggestionBox}>
+
                 {suggestions.map((item) => (
+
                   <div
                     key={item.id}
                     style={styles.suggestionItem}
@@ -208,15 +282,22 @@ export default function StudentDashboard() {
                   >
                     {item.title}
                   </div>
+
                 ))}
+
               </div>
+
             )}
 
           </div>
 
+
           <div style={styles.contentArea}>
 
+            {/* VIEWED TOPICS */}
+
             {activeSection === "viewed" && (
+
               <>
                 <h2 style={styles.heading}>Your Viewed Topics</h2>
 
@@ -235,6 +316,7 @@ export default function StudentDashboard() {
                         navigate(`/study-material/${topic.subject_id}`)
                       }
                     >
+
                       <h4>{topic.title}</h4>
 
                       <p>
@@ -247,12 +329,16 @@ export default function StudentDashboard() {
                   ))}
 
                 </div>
+
               </>
+
             )}
+
 
             {/* ATTEMPTED QUIZZES */}
 
             {activeSection === "quiz" && (
+
               <>
                 <h2 style={styles.heading}>Your Attempted Quizzes</h2>
 
@@ -271,6 +357,7 @@ export default function StudentDashboard() {
                         navigate(`/study-material/${quiz.subject_id}`)
                       }
                     >
+
                       <h4>{quiz.quiz_title}</h4>
 
                       <p>
@@ -291,21 +378,73 @@ export default function StudentDashboard() {
                   ))}
 
                 </div>
+
               </>
+
+            )}
+
+
+            {/* LEADERBOARD ANALYTICS */}
+
+            {activeSection === "leaderboard" && analytics && (
+
+              <>
+                <h2 style={styles.heading}>Your Performance Analytics</h2>
+
+                <div style={styles.chartBox}>
+
+                  <ResponsiveContainer width="100%" height={350}>
+
+                    <PieChart>
+
+                      <Pie
+                        data={chartData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={120}
+                        dataKey="value"
+                        label
+                      >
+
+                        {chartData.map((entry, index) => (
+                          <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                        ))}
+
+                      </Pie>
+
+                      <Tooltip />
+                      <Legend />
+
+                    </PieChart>
+
+                  </ResponsiveContainer>
+
+                </div>
+
+              </>
+
             )}
 
           </div>
+
         </div>
+
       </div>
+
     </div>
+
   );
+
 }
 
+
 const styles = {
+
   page:{
     minHeight:"100vh",
     background:"linear-gradient(135deg,#f0f9ff,#f5f3ff,#ecfdf5)"
   },
+
   hero:{
     background:"#4f46e5",
     color:"#fff",
@@ -314,8 +453,11 @@ const styles = {
     justifyContent:"space-between",
     alignItems:"center"
   },
+
   heroTitle:{margin:0,fontSize:"34px"},
+
   heroSubtitle:{marginTop:"6px"},
+
   heroHomeBtn:{
     padding:"10px 25px",
     borderRadius:"25px",
@@ -324,7 +466,9 @@ const styles = {
     color:"#4f46e5",
     cursor:"pointer"
   },
+
   wrapper:{display:"flex",marginTop:"25px",padding:"0 20px"},
+
   sidebar:{
     width:"260px",
     background:"#fff",
@@ -334,7 +478,9 @@ const styles = {
     flexDirection:"column",
     gap:"15px"
   },
+
   profileBox:{textAlign:"center",marginBottom:"20px"},
+
   avatar:{
     width:"70px",
     height:"70px",
@@ -347,7 +493,9 @@ const styles = {
     fontSize:"26px",
     margin:"0 auto"
   },
+
   roleText:{fontSize:"13px",color:"#64748b"},
+
   menuBtn:{
     padding:"16px",
     borderRadius:"20px",
@@ -357,6 +505,7 @@ const styles = {
     fontWeight:"600",
     boxShadow:"0 4px 10px rgba(0,0,0,0.05)"
   },
+
   logoutBtn:{
     marginTop:"auto",
     padding:"16px",
@@ -366,7 +515,9 @@ const styles = {
     color:"#fff",
     cursor:"pointer"
   },
+
   mainContent:{flex:1,padding:"40px"},
+
   searchSection:{
     display:"flex",
     borderRadius:"50px",
@@ -374,8 +525,11 @@ const styles = {
     background:"#fff",
     boxShadow:"0 10px 25px rgba(0,0,0,0.06)"
   },
+
   searchInput:{flex:1,padding:"16px 25px",border:"none",outline:"none"},
+
   searchBtn:{padding:"0 35px",border:"none",background:"#4f46e5",color:"#fff"},
+
   suggestionBox:{
     position:"absolute",
     width:"100%",
@@ -384,23 +538,36 @@ const styles = {
     boxShadow:"0 10px 25px rgba(0,0,0,0.1)",
     marginTop:"5px"
   },
+
   suggestionItem:{
     padding:"12px 20px",
     cursor:"pointer",
     borderBottom:"1px solid #eee"
   },
+
   contentArea:{maxWidth:"1000px",margin:"0 auto"},
+
   heading:{marginBottom:"25px",color:"#1e293b"},
+
   cardGrid:{
     display:"grid",
     gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",
     gap:"25px"
   },
+
   card:{
     background:"#fff",
     padding:"25px",
     borderRadius:"16px",
     boxShadow:"0 10px 25px rgba(0,0,0,0.05)",
     cursor:"pointer"
+  },
+
+  chartBox:{
+    background:"#fff",
+    padding:"40px",
+    borderRadius:"16px",
+    boxShadow:"0 10px 25px rgba(0,0,0,0.05)"
   }
+
 };

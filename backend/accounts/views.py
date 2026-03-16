@@ -263,3 +263,34 @@ def get_attempted_quizzes(request, username):
 
     except:
         return Response([])
+
+
+# ---------------- STUDENT ANALYTICS ----------------
+
+@api_view(['GET'])
+def student_analytics(request, username):
+
+    try:
+
+        user = User.objects.get(username=username)
+
+        viewed_count = ViewedTopic.objects.filter(user=user).count()
+        quiz_count = QuizAttempt.objects.filter(user=user).count()
+
+        # certification placeholder (if another app handles it)
+        certification_count = 0
+
+        data = {
+            "topics_viewed": viewed_count,
+            "quizzes_attempted": quiz_count,
+            "certifications": certification_count
+        }
+
+        return Response(data)
+
+    except:
+        return Response({
+            "topics_viewed": 0,
+            "quizzes_attempted": 0,
+            "certifications": 0
+        })
