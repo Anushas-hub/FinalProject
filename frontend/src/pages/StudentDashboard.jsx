@@ -12,8 +12,8 @@ export default function StudentDashboard() {
   const [subjects, setSubjects] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
 
-  /* VIEWED TOPICS STATE */
   const [viewedTopics, setViewedTopics] = useState([]);
+  const [attemptedQuizzes, setAttemptedQuizzes] = useState([]);
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -21,6 +21,7 @@ export default function StudentDashboard() {
   }, [user, role, navigate]);
 
   /* FETCH SUBJECTS */
+
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/subjects/")
       .then((res) => res.json())
@@ -29,10 +30,20 @@ export default function StudentDashboard() {
   }, []);
 
   /* FETCH VIEWED TOPICS */
+
   const fetchViewedTopics = () => {
     fetch(`http://127.0.0.1:8000/api/viewed-topics/${user}/`)
       .then((res) => res.json())
       .then((data) => setViewedTopics(data))
+      .catch((err) => console.error(err));
+  };
+
+  /* FETCH ATTEMPTED QUIZZES */
+
+  const fetchAttemptedQuizzes = () => {
+    fetch(`http://127.0.0.1:8000/api/attempted-quizzes/${user}/`)
+      .then((res) => res.json())
+      .then((data) => setAttemptedQuizzes(data))
       .catch((err) => console.error(err));
   };
 
@@ -96,6 +107,7 @@ export default function StudentDashboard() {
     <div style={styles.page}>
       
       {/* HERO */}
+
       <div style={styles.hero}>
         <div>
           <h1 style={styles.heroTitle}>Student Dashboard</h1>
@@ -113,6 +125,7 @@ export default function StudentDashboard() {
       <div style={styles.wrapper}>
 
         {/* SIDEBAR */}
+
         <div style={styles.sidebar}>
           <div style={styles.profileBox}>
             <div style={styles.avatar}>
@@ -134,9 +147,12 @@ export default function StudentDashboard() {
 
           <button
             style={styles.menuBtn}
-            onClick={() => setActiveSection("quiz")}
+            onClick={() => {
+              setActiveSection("quiz");
+              fetchAttemptedQuizzes();
+            }}
           >
-            Attemted Quizzes
+            Attempted Quizzes
           </button>
 
           <button
@@ -158,10 +174,12 @@ export default function StudentDashboard() {
           </button>
         </div>
 
-        {/* MAIN CONTENT */}
+        {/* MAIN */}
+
         <div style={styles.mainContent}>
 
           {/* SEARCH */}
+
           <div style={{position:"relative", maxWidth:"800px", margin:"0 auto 40px auto"}}>
 
             <div style={styles.searchSection}>
@@ -196,29 +214,7 @@ export default function StudentDashboard() {
 
           </div>
 
-          {/* CONTENT */}
           <div style={styles.contentArea}>
-
-            {activeSection === "home" && (
-              <>
-                <h2 style={styles.heading}>
-                  Suggested Study Materials
-                </h2>
-
-                <div style={styles.cardGrid}>
-                  {[1, 2, 3, 4].map((item) => (
-                    <div key={item} style={styles.card}>
-                      <h4>Recommended Topic {item}</h4>
-                      <p>
-                        High quality notes & quizzes available.
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {/* VIEWED TOPICS */}
 
             {activeSection === "viewed" && (
               <>
@@ -254,18 +250,48 @@ export default function StudentDashboard() {
               </>
             )}
 
+            {/* ATTEMPTED QUIZZES */}
+
             {activeSection === "quiz" && (
-              <h2 style={styles.heading}>
-                Your Attemted Quizzes
-              </h2>
-            )}
+              <>
+                <h2 style={styles.heading}>Your Attempted Quizzes</h2>
 
-            {activeSection === "cert" && (
-              <h2 style={styles.heading}>Your Certifications</h2>
-            )}
+                <div style={styles.cardGrid}>
 
-            {activeSection === "leaderboard" && (
-              <h2 style={styles.heading}>Leaderboard</h2>
+                  {attemptedQuizzes.length === 0 && (
+                    <p>No quiz attempts yet.</p>
+                  )}
+
+                  {attemptedQuizzes.map((quiz, index) => (
+
+                    <div
+                      key={index}
+                      style={styles.card}
+                      onClick={() =>
+                        navigate(`/study-material/${quiz.subject_id}`)
+                      }
+                    >
+                      <h4>{quiz.quiz_title}</h4>
+
+                      <p>
+                        Subject: {quiz.subject_title}
+                      </p>
+
+                      <p>
+                        Score: {quiz.score} / {quiz.total}
+                      </p>
+
+                      <p>
+                        Attempted:{" "}
+                        {new Date(quiz.attempted_at).toLocaleDateString()}
+                      </p>
+
+                    </div>
+
+                  ))}
+
+                </div>
+              </>
             )}
 
           </div>
@@ -276,174 +302,105 @@ export default function StudentDashboard() {
 }
 
 const styles = {
-  page: {
-    minHeight: "100vh",
-    background:
-      "linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 50%, #ecfdf5 100%)",
+  page:{
+    minHeight:"100vh",
+    background:"linear-gradient(135deg,#f0f9ff,#f5f3ff,#ecfdf5)"
   },
-
-  hero: {
-    background: "#4f46e5",
-    color: "#ffffff",
-    padding: "18px 20px",
-    display: "flex",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    alignItems: "center",
+  hero:{
+    background:"#4f46e5",
+    color:"#fff",
+    padding:"18px 20px",
+    display:"flex",
+    justifyContent:"space-between",
+    alignItems:"center"
   },
-
-  heroTitle: {
-    margin: 0,
-    fontSize: "34px",
-    fontWeight: "700",
+  heroTitle:{margin:0,fontSize:"34px"},
+  heroSubtitle:{marginTop:"6px"},
+  heroHomeBtn:{
+    padding:"10px 25px",
+    borderRadius:"25px",
+    border:"none",
+    background:"#fff",
+    color:"#4f46e5",
+    cursor:"pointer"
   },
-
-  heroSubtitle: {
-    marginTop: "6px",
-    fontSize: "16px",
-    opacity: 0.9,
+  wrapper:{display:"flex",marginTop:"25px",padding:"0 20px"},
+  sidebar:{
+    width:"260px",
+    background:"#fff",
+    padding:"30px 20px",
+    boxShadow:"4px 0 15px rgba(0,0,0,0.05)",
+    display:"flex",
+    flexDirection:"column",
+    gap:"15px"
   },
-
-  heroHomeBtn: {
-    padding: "10px 25px",
-    borderRadius: "25px",
-    border: "none",
-    background: "#ffffff",
-    color: "#4f46e5",
-    fontWeight: "600",
-    cursor: "pointer",
+  profileBox:{textAlign:"center",marginBottom:"20px"},
+  avatar:{
+    width:"70px",
+    height:"70px",
+    borderRadius:"50%",
+    background:"linear-gradient(135deg,#4f46e5,#06b6d4)",
+    display:"flex",
+    alignItems:"center",
+    justifyContent:"center",
+    color:"#fff",
+    fontSize:"26px",
+    margin:"0 auto"
   },
-
-  wrapper: {
-    display: "flex",
-    flexWrap: "wrap",
-    marginTop: "25px",
-    padding: "0 20px",
+  roleText:{fontSize:"13px",color:"#64748b"},
+  menuBtn:{
+    padding:"16px",
+    borderRadius:"20px",
+    border:"none",
+    background:"#fff",
+    cursor:"pointer",
+    fontWeight:"600",
+    boxShadow:"0 4px 10px rgba(0,0,0,0.05)"
   },
-
-  sidebar: {
-    width: "260px",
-    minWidth: "220px",
-    background: "#ffffff",
-    padding: "30px 20px",
-    boxShadow: "4px 0 15px rgba(0,0,0,0.05)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
+  logoutBtn:{
+    marginTop:"auto",
+    padding:"16px",
+    borderRadius:"20px",
+    border:"none",
+    background:"red",
+    color:"#fff",
+    cursor:"pointer"
   },
-
-  profileBox: {
-    textAlign: "center",
-    marginBottom: "20px",
+  mainContent:{flex:1,padding:"40px"},
+  searchSection:{
+    display:"flex",
+    borderRadius:"50px",
+    overflow:"hidden",
+    background:"#fff",
+    boxShadow:"0 10px 25px rgba(0,0,0,0.06)"
   },
-
-  avatar: {
-    width: "70px",
-    height: "70px",
-    borderRadius: "50%",
-    background: "linear-gradient(135deg,#4f46e5,#06b6d4)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#fff",
-    fontSize: "26px",
-    margin: "0 auto",
+  searchInput:{flex:1,padding:"16px 25px",border:"none",outline:"none"},
+  searchBtn:{padding:"0 35px",border:"none",background:"#4f46e5",color:"#fff"},
+  suggestionBox:{
+    position:"absolute",
+    width:"100%",
+    background:"#fff",
+    borderRadius:"10px",
+    boxShadow:"0 10px 25px rgba(0,0,0,0.1)",
+    marginTop:"5px"
   },
-
-  roleText: {
-    fontSize: "13px",
-    color: "#64748b",
+  suggestionItem:{
+    padding:"12px 20px",
+    cursor:"pointer",
+    borderBottom:"1px solid #eee"
   },
-
-  menuBtn: {
-    padding: "16px",
-    borderRadius: "20px",
-    border: "none",
-    background: "#ffffff",
-    cursor: "pointer",
-    fontWeight: "600",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+  contentArea:{maxWidth:"1000px",margin:"0 auto"},
+  heading:{marginBottom:"25px",color:"#1e293b"},
+  cardGrid:{
+    display:"grid",
+    gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",
+    gap:"25px"
   },
-
-  logoutBtn: {
-    marginTop: "auto",
-    padding: "16px",
-    borderRadius: "20px",
-    border: "none",
-    background: "red",
-    color: "#ffffff",
-    fontWeight: "600",
-    cursor: "pointer",
-  },
-
-  mainContent: {
-    flex: 1,
-    padding: "40px",
-  },
-
-  searchSection: {
-    display: "flex",
-    borderRadius: "50px",
-    overflow: "hidden",
-    background: "#ffffff",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
-  },
-
-  searchInput: {
-    flex: 1,
-    padding: "16px 25px",
-    border: "none",
-    outline: "none",
-    fontSize: "16px",
-  },
-
-  searchBtn: {
-    padding: "0 35px",
-    border: "none",
-    background: "#4f46e5",
-    color: "#ffffff",
-    fontSize: "15px",
-    cursor: "pointer",
-  },
-
-  suggestionBox: {
-    position: "absolute",
-    width: "100%",
-    background: "#fff",
-    borderRadius: "10px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-    marginTop: "5px",
-    zIndex: 10,
-    textAlign: "left",
-  },
-
-  suggestionItem: {
-    padding: "12px 20px",
-    cursor: "pointer",
-    borderBottom: "1px solid #eee",
-  },
-
-  contentArea: {
-    maxWidth: "1000px",
-    margin: "0 auto",
-  },
-
-  heading: {
-    marginBottom: "25px",
-    color: "#1e293b",
-  },
-
-  cardGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-    gap: "25px",
-  },
-
-  card: {
-    background: "#ffffff",
-    padding: "25px",
-    borderRadius: "16px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-    cursor: "pointer"
-  },
+  card:{
+    background:"#fff",
+    padding:"25px",
+    borderRadius:"16px",
+    boxShadow:"0 10px 25px rgba(0,0,0,0.05)",
+    cursor:"pointer"
+  }
 };

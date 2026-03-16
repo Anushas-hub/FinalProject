@@ -1,8 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import QuizLayout from "../components/QuizLayout";
-
 
 function QuizPage() {
 
@@ -36,6 +34,26 @@ function QuizPage() {
     });
 
     setScore(correct);
+
+    const user = localStorage.getItem("user");
+
+    fetch("http://127.0.0.1:8000/api/save-quiz-attempt/", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        username: user,
+        quiz_id: quiz.id,
+        score: correct,
+        total: quiz.questions.length
+      })
+
+    });
+
   };
 
   if (!quiz) {

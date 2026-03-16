@@ -7,7 +7,9 @@ from .views import (
     get_quizzes,
     get_quiz,
     save_viewed_topic,
-    get_viewed_topics
+    get_viewed_topics,
+    save_quiz_attempt,
+    get_attempted_quizzes
 )
 
 urlpatterns = [
@@ -25,4 +27,10 @@ urlpatterns = [
     path('save-viewed-topic/', save_viewed_topic),
 
     path('viewed-topics/<str:username>/', get_viewed_topics),
+
+    # NEW
+
+    path('save-quiz-attempt/', save_quiz_attempt),
+
+    path('attempted-quizzes/<str:username>/', get_attempted_quizzes),
 ]

@@ -67,7 +67,7 @@ class Question(models.Model):
         return self.question
 
 
-# ---------------- VIEWED TOPICS (HISTORY) ----------------
+# ---------------- VIEWED TOPICS ----------------
 
 class ViewedTopic(models.Model):
 
@@ -81,3 +81,22 @@ class ViewedTopic(models.Model):
 
     def __str__(self):
         return f"{self.user.username} viewed {self.subject.title}"
+
+
+# ---------------- QUIZ ATTEMPT HISTORY ----------------
+
+class QuizAttempt(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+
+    score = models.IntegerField()
+    total_questions = models.IntegerField()
+
+    attempted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-attempted_at"]
+
+    def __str__(self):
+        return f"{self.user.username} attempted {self.quiz.title}"

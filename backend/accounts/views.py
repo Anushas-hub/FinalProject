@@ -2,7 +2,8 @@ from django.contrib.auth import authenticate, get_user_model
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Subject, Module, Quiz, Question, ViewedTopic
+
+from .models import Subject, Module, Quiz, Question, ViewedTopic, QuizAttempt
 
 User = get_user_model()
 
@@ -160,6 +161,7 @@ def save_viewed_topic(request):
     subject_id = request.data.get("subject_id")
 
     try:
+
         user = User.objects.get(username=username)
         subject = Subject.objects.get(id=subject_id)
 
@@ -174,12 +176,13 @@ def save_viewed_topic(request):
         return Response({"error": str(e)}, status=400)
 
 
-# ---------------- GET USER HISTORY ----------------
+# ---------------- GET VIEWED TOPICS ----------------
 
 @api_view(['GET'])
 def get_viewed_topics(request, username):
 
     try:
+
         user = User.objects.get(username=username)
 
         history = ViewedTopic.objects.filter(user=user)
@@ -187,10 +190,73 @@ def get_viewed_topics(request, username):
         data = []
 
         for item in history:
+
             data.append({
                 "subject_id": item.subject.id,
                 "title": item.subject.title,
                 "viewed_at": item.viewed_at
+            })
+
+        return Response(data)
+
+    except:
+        return Response([])
+
+
+# ---------------- SAVE QUIZ ATTEMPT ----------------
+
+@api_view(['POST'])
+def save_quiz_attempt(request):
+
+    username = request.data.get("username")
+    quiz_id = request.data.get("quiz_id")
+    score = request.data.get("score")
+    total = request.data.get("total")
+
+    try:
+
+        user = User.objects.get(username=username)
+        quiz = Quiz.objects.get(id=quiz_id)
+
+        QuizAttempt.objects.create(
+            user=user,
+            quiz=quiz,
+            score=score,
+            total_questions=total
+        )
+
+        return Response({"message": "Quiz attempt saved"})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+# ---------------- GET QUIZ HISTORY ----------------
+
+@api_view(['GET'])
+def get_attempted_quizzes(request, username):
+
+    try:
+
+        user = User.objects.get(username=username)
+
+        attempts = QuizAttempt.objects.filter(user=user)
+
+        data = []
+
+        for a in attempts:
+
+            data.append({
+
+                "quiz_title": a.quiz.title,
+                "subject_title": a.quiz.module.subject.title,
+                "subject_id": a.quiz.module.subject.id,
+
+                "score": a.score,
+                "total": a.total_questions,
+
+                "attempted_at": a.attempted_at
+
             })
 
         return Response(data)
