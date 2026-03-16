@@ -8,14 +8,79 @@ export default function StudentDashboard() {
 
   const [activeSection, setActiveSection] = useState("home");
 
+  /* SEARCH STATES */
+  const [searchTerm, setSearchTerm] = useState("");
+  const [subjects, setSubjects] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+
   useEffect(() => {
     if (!user) navigate("/login");
     if (role !== "student") navigate("/");
   }, [user, role, navigate]);
 
+  /* FETCH SUBJECTS (same as homepage) */
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/subjects/")
+      .then((res) => res.json())
+      .then((data) => setSubjects(data))
+      .catch((err) => console.error(err));
+  }, []);
+
   const handleLogout = () => {
     localStorage.clear();
     navigate("/");
+  };
+
+  /* SEARCH INPUT CHANGE */
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (value.length > 0) {
+      const filtered = subjects.filter((subject) =>
+        subject.title.toLowerCase().includes(value.toLowerCase())
+      );
+
+      setSuggestions(filtered);
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  /* SUGGESTION CLICK */
+  const handleSuggestionClick = (id, title) => {
+    setSearchTerm(title);
+    setSuggestions([]);
+    navigate(`/study-material/${id}`);
+  };
+
+  /* SEARCH BUTTON LOGIC (same as homepage) */
+  const handleSearch = () => {
+    if (!searchTerm.trim()) return;
+
+    const text = searchTerm.toLowerCase();
+
+    const yearMatch = text.match(/\b(20\d{2})\b/);
+    const year = yearMatch ? yearMatch[0] : "";
+
+    if (
+      text.includes("pyq") ||
+      text.includes("previous year") ||
+      text.includes("question")
+    ) {
+      let subject = text
+        .replace("pyq", "")
+        .replace("previous year", "")
+        .replace("question", "")
+        .replace(/\b20\d{2}\b/, "")
+        .trim();
+
+      navigate(`/previous-year-questions?subject=${subject}&year=${year}`);
+
+      return;
+    }
+
+    navigate(`/study-material?search=${searchTerm}`);
   };
 
   if (!user || role !== "student") return null;
@@ -23,7 +88,7 @@ export default function StudentDashboard() {
   return (
     <div style={styles.page}>
       
-      {/* 🔵 HERO SECTION */}
+      {/* HERO */}
       <div style={styles.hero}>
         <div>
           <h1 style={styles.heroTitle}>Student Dashboard</h1>
@@ -38,7 +103,6 @@ export default function StudentDashboard() {
         </button>
       </div>
 
-      {/* 🔽 MAIN SECTION STARTS JUST BELOW HERO */}
       <div style={styles.wrapper}>
 
         {/* SIDEBAR */}
@@ -62,7 +126,8 @@ export default function StudentDashboard() {
             style={styles.menuBtn}
             onClick={() => setActiveSection("quiz")}
           >
-Attemted Quizzes          </button>
+            Attemted Quizzes
+          </button>
 
           <button
             style={styles.menuBtn}
@@ -78,7 +143,6 @@ Attemted Quizzes          </button>
             Leaderboard
           </button>
 
-          {/* 🔴 RED LOGOUT AT BOTTOM */}
           <button style={styles.logoutBtn} onClick={handleLogout}>
             Logout
           </button>
@@ -88,17 +152,44 @@ Attemted Quizzes          </button>
         <div style={styles.mainContent}>
 
           {/* SEARCH */}
-          <div style={styles.searchSection}>
-            <input
-              type="text"
-              placeholder="Search topics, study materials, courses..."
-              style={styles.searchInput}
-            />
-            <button style={styles.searchBtn}>Search</button>
+          <div style={{position:"relative", maxWidth:"800px", margin:"0 auto 40px auto"}}>
+
+            <div style={styles.searchSection}>
+              <input
+                type="text"
+                placeholder="Search topics, study materials, courses..."
+                style={styles.searchInput}
+                value={searchTerm}
+                onChange={handleChange}
+              />
+
+              <button style={styles.searchBtn} onClick={handleSearch}>
+                Search
+              </button>
+            </div>
+
+            {/* SUGGESTIONS */}
+            {suggestions.length > 0 && (
+              <div style={styles.suggestionBox}>
+                {suggestions.map((item) => (
+                  <div
+                    key={item.id}
+                    style={styles.suggestionItem}
+                    onClick={() =>
+                      handleSuggestionClick(item.id, item.title)
+                    }
+                  >
+                    {item.title}
+                  </div>
+                ))}
+              </div>
+            )}
+
           </div>
 
           {/* CONTENT */}
           <div style={styles.contentArea}>
+
             {activeSection === "home" && (
               <>
                 <h2 style={styles.heading}>
@@ -124,7 +215,8 @@ Attemted Quizzes          </button>
 
             {activeSection === "quiz" && (
               <h2 style={styles.heading}>
-               Your Attemted Quizzes              </h2>
+                Your Attemted Quizzes
+              </h2>
             )}
 
             {activeSection === "cert" && (
@@ -132,10 +224,9 @@ Attemted Quizzes          </button>
             )}
 
             {activeSection === "leaderboard" && (
-              <h2 style={styles.heading}>
-                Leaderboard 
-              </h2>
+              <h2 style={styles.heading}>Leaderboard</h2>
             )}
+
           </div>
         </div>
       </div>
@@ -150,16 +241,16 @@ const styles = {
       "linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 50%, #ecfdf5 100%)",
   },
 
-  /* 🔵 HERO */
- hero: {
-  background: "#4f46e5",
-  color: "#ffffff",
-  padding: "18px 20px",
-  display: "flex",
-  flexWrap: "wrap",
-  justifyContent: "space-between",
-  alignItems: "center",
-},
+  hero: {
+    background: "#4f46e5",
+    color: "#ffffff",
+    padding: "18px 20px",
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
   heroTitle: {
     margin: 0,
     fontSize: "34px",
@@ -182,24 +273,23 @@ const styles = {
     cursor: "pointer",
   },
 
-  /* MAIN */
- wrapper: {
-  display: "flex",
-  flexWrap: "wrap",
-  marginTop: "25px",
-  padding: "0 20px",
-},
+  wrapper: {
+    display: "flex",
+    flexWrap: "wrap",
+    marginTop: "25px",
+    padding: "0 20px",
+  },
 
- sidebar: {
-  width: "260px",
-  minWidth: "220px",
-  background: "#ffffff",
-  padding: "30px 20px",
-  boxShadow: "4px 0 15px rgba(0,0,0,0.05)",
-  display: "flex",
-  flexDirection: "column",
-  gap: "15px",
-},
+  sidebar: {
+    width: "260px",
+    minWidth: "220px",
+    background: "#ffffff",
+    padding: "30px 20px",
+    boxShadow: "4px 0 15px rgba(0,0,0,0.05)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+  },
 
   profileBox: {
     textAlign: "center",
@@ -251,8 +341,6 @@ const styles = {
   },
 
   searchSection: {
-    maxWidth: "800px",
-    margin: "0 auto 40px auto",
     display: "flex",
     borderRadius: "50px",
     overflow: "hidden",
@@ -277,6 +365,23 @@ const styles = {
     cursor: "pointer",
   },
 
+  suggestionBox: {
+    position: "absolute",
+    width: "100%",
+    background: "#fff",
+    borderRadius: "10px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+    marginTop: "5px",
+    zIndex: 10,
+    textAlign: "left",
+  },
+
+  suggestionItem: {
+    padding: "12px 20px",
+    cursor: "pointer",
+    borderBottom: "1px solid #eee",
+  },
+
   contentArea: {
     maxWidth: "1000px",
     margin: "0 auto",
@@ -288,10 +393,10 @@ const styles = {
   },
 
   cardGrid: {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-  gap: "25px",
-},
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "25px",
+  },
 
   card: {
     background: "#ffffff",
