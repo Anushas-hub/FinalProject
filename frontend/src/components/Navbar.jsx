@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import logo from "../assets/logo.png";
 
@@ -21,22 +21,41 @@ const Navbar = () => {
 
   return (
     <div className="navbar">
-      <div className="nav-left">
+      
+      {/* LOGO + SMARTSTUDY CLICKABLE HOME */}
+      <NavLink to="/" className="nav-left" style={{ textDecoration: "none" }}>
         <img src={logo} alt="SmartStudy Logo" className="logo" />
         <h2>SmartStudy</h2>
-      </div>
+      </NavLink>
 
       <div className="nav-center">
-        <Link to="/">Home</Link>
-        <Link to="/study-material">Study Material</Link>
-        <Link to="/previous-year-questions">Previous Year Question Papers</Link>
+        <NavLink 
+          to="/" 
+          className={({ isActive }) => isActive ? "active-link" : ""}
+        >
+          Home
+        </NavLink>
+
+        <NavLink 
+          to="/study-material"
+          className={({ isActive }) => isActive ? "active-link" : ""}
+        >
+          Study Material
+        </NavLink>
+
+        <NavLink 
+          to="/previous-year-questions"
+          className={({ isActive }) => isActive ? "active-link" : ""}
+        >
+          Previous Year Question Papers
+        </NavLink>
       </div>
 
       <div className="nav-right">
         {!user ? (
-          <Link to="/login" className="nav-btn">
+          <NavLink to="/login" className="nav-btn">
             Login / Signup
-          </Link>
+          </NavLink>
         ) : (
           <button onClick={goToDashboard} className="dashboard-btn">
             Dashboard
