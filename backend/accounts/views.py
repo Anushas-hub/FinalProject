@@ -377,3 +377,22 @@ def save_author_profile(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+    
+@api_view(['POST'])
+def delete_author_image(request):
+
+    username = request.data.get("username")
+
+    try:
+        user = User.objects.get(username=username)
+        profile = AuthorProfile.objects.get(user=user)
+
+        if profile.profile_image:
+            profile.profile_image.delete(save=False)
+            profile.profile_image = None
+            profile.save()
+
+        return Response({"message": "Image deleted"})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import get_author_profile, save_author_profile
+from .views import get_author_profile, save_author_profile, delete_author_image
 from .views import (
     signup,
     login_view,
@@ -38,7 +38,7 @@ urlpatterns = [
     path('attempted-quizzes/<str:username>/', get_attempted_quizzes),
 
     path('student-analytics/<str:username>/', student_analytics),
-
+    path('delete-author-image/', delete_author_image),
     # NEW FEEDBACK API
     path('submit-feedback/', submit_feedback),
 ]

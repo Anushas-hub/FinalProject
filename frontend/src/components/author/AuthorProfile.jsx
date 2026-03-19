@@ -14,6 +14,8 @@ export default function AuthorProfile() {
     imageFile: null
   });
 
+  const [refresh, setRefresh] = useState(false);
+
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/api/author-profile/${username}/`)
       .then(res => res.json())
@@ -28,23 +30,19 @@ export default function AuthorProfile() {
           imageFile: null
         });
       });
-  }, [username]);
+  }, [username, refresh]);
 
 
   const handleImageChange = (e) => {
-
     const file = e.target.files[0];
 
     if (file) {
-
       setProfileData({
         ...profileData,
         profileImage: URL.createObjectURL(file),
         imageFile: file
       });
-
     }
-
   };
 
 
@@ -72,6 +70,26 @@ export default function AuthorProfile() {
 
     alert(data.message || "Saved");
 
+    setRefresh(!refresh); // 🔥 auto refresh after save
+  };
+
+
+  const deleteImage = async () => {
+
+    await fetch("http://127.0.0.1:8000/api/delete-author-image/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username })
+    });
+
+    setProfileData({
+      ...profileData,
+      profileImage: null,
+      imageFile: null
+    });
+
   };
 
 
@@ -83,11 +101,10 @@ export default function AuthorProfile() {
 
       <div style={styles.card}>
 
-
+        {/* IMAGE SECTION */}
         <div style={styles.imageSection}>
 
           <div style={styles.imageWrapper}>
-
             {profileData.profileImage ? (
               <img
                 src={profileData.profileImage}
@@ -97,25 +114,43 @@ export default function AuthorProfile() {
             ) : (
               <div style={styles.placeholder}>No Image</div>
             )}
-
           </div>
 
-          <label style={styles.imageBtn}>
+          {/* CONDITIONAL BUTTONS */}
+          {profileData.profileImage ? (
+            <div style={{ display: "flex", gap: "10px" }}>
 
-            Upload Image
+              <label style={styles.imageBtn}>
+                Edit
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleImageChange}
+                />
+              </label>
 
-            <input
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleImageChange}
-            />
+              <button style={styles.deleteBtn} onClick={deleteImage}>
+                Delete
+              </button>
 
-          </label>
+            </div>
+          ) : (
+            <label style={styles.imageBtn}>
+              Upload Image
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleImageChange}
+              />
+            </label>
+          )}
 
         </div>
 
 
+        {/* FORM */}
         <div style={styles.field}>
           <label>Full Name</label>
           <input
@@ -126,7 +161,6 @@ export default function AuthorProfile() {
             }
           />
         </div>
-
 
         <div style={styles.field}>
           <label>Bio</label>
@@ -139,9 +173,7 @@ export default function AuthorProfile() {
           />
         </div>
 
-
         <div style={styles.grid}>
-
           <div style={styles.field}>
             <label>Education</label>
             <input
@@ -163,9 +195,7 @@ export default function AuthorProfile() {
               }
             />
           </div>
-
         </div>
-
 
         <div style={styles.field}>
           <label>Skills</label>
@@ -178,17 +208,13 @@ export default function AuthorProfile() {
           />
         </div>
 
-
         <button style={styles.primaryBtn} onClick={saveProfile}>
           Save Changes
         </button>
 
       </div>
-
     </div>
-
   );
-
 }
 
 const styles = {
@@ -200,6 +226,7 @@ const styles = {
   profileImage:{width:"100%",height:"100%",objectFit:"cover"},
   placeholder:{display:"flex",alignItems:"center",justifyContent:"center",height:"100%",color:"#94a3b8"},
   imageBtn:{padding:"10px 18px",borderRadius:"12px",border:"1px solid #4f46e5",cursor:"pointer"},
+  deleteBtn:{padding:"10px 18px",borderRadius:"12px",border:"1px solid red",color:"red",cursor:"pointer"},
   field:{marginBottom:"20px",display:"flex",flexDirection:"column"},
   input:{padding:"12px",borderRadius:"10px",border:"1px solid #ddd"},
   textarea:{padding:"12px",borderRadius:"10px",border:"1px solid #ddd",minHeight:"100px"},

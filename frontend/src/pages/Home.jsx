@@ -12,7 +12,47 @@ export default function Home() {
   const [subjects, setSubjects] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
 
-  // fetch subjects once
+  // ✅ USER STATE (for chatbot reset)
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    setUser(localStorage.getItem("user"));
+  }, []);
+
+  // ✅ CHATBOT RELOAD ON USER CHANGE (OPTION 3 IMPLEMENTED)
+  useEffect(() => {
+
+    // 🔥 destroy old chatbot if exists
+    if (window.chtl) {
+      window.chtl.destroy();
+    }
+
+    // 🔥 remove old script if exists
+    const oldScript = document.getElementById("chtl-script");
+    if (oldScript) oldScript.remove();
+
+    // 🔥 config
+    const configScript = document.createElement("script");
+    configScript.innerHTML = `
+      window.chtlConfig = { chatbotId: "6671678674" }
+    `;
+    document.body.appendChild(configScript);
+
+    // 🔥 load new chatbot
+    const script = document.createElement("script");
+    script.src = "https://chatling.ai/js/embed.js";
+    script.async = true;
+    script.id = "chtl-script";
+    script.setAttribute("data-id", "6671678674");
+
+    script.onload = () => console.log("✅ Chatling Reloaded");
+    script.onerror = () => console.log("❌ Chatling Failed");
+
+    document.body.appendChild(script);
+
+  }, [user]); // 👈 KEY CHANGE
+
+  // fetch subjects
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/subjects/")
       .then((res) => res.json())
@@ -48,64 +88,51 @@ export default function Home() {
   };
 
   const handleChange = (e) => {
-
     const value = e.target.value;
     setSearchTerm(value);
 
     if (value.length > 0) {
-
       const filtered = subjects.filter((subject) =>
         subject.title.toLowerCase().includes(value.toLowerCase())
       );
-
       setSuggestions(filtered);
-
     } else {
-
       setSuggestions([]);
-
     }
   };
 
   const handleSuggestionClick = (id, title) => {
-
     setSearchTerm(title);
     setSuggestions([]);
     navigate(`/study-material/${id}`);
-
   };
 
-const handleSearch = () => {
+  const handleSearch = () => {
+    if (!searchTerm.trim()) return;
 
-if (!searchTerm.trim()) return;
+    const text = searchTerm.toLowerCase();
+    const yearMatch = text.match(/\b(20\d{2})\b/);
+    const year = yearMatch ? yearMatch[0] : "";
 
-const text = searchTerm.toLowerCase()
+    if (
+      text.includes("pyq") ||
+      text.includes("previous year") ||
+      text.includes("question")
+    ) {
+      let subject = text
+        .replace("pyq", "")
+        .replace("previous year", "")
+        .replace("question", "")
+        .replace(/\b20\d{2}\b/, "")
+        .trim();
 
-const yearMatch = text.match(/\b(20\d{2})\b/)
-const year = yearMatch ? yearMatch[0] : ""
+      navigate(`/previous-year-questions?subject=${subject}&year=${year}`);
+      return;
+    }
 
-if (
-text.includes("pyq") ||
-text.includes("previous year") ||
-text.includes("question")
-){
+    navigate(`/study-material?search=${searchTerm}`);
+  };
 
-let subject=text
-.replace("pyq","")
-.replace("previous year","")
-.replace("question","")
-.replace(/\b20\d{2}\b/,"")
-.trim()
-
-navigate(`/previous-year-questions?subject=${subject}&year=${year}`)
-
-return
-
-}
-
-navigate(`/study-material?search=${searchTerm}`)
-
-}
   return (
     <div style={styles.page}>
       <Navbar />
@@ -115,8 +142,7 @@ navigate(`/study-material?search=${searchTerm}`)
       <section style={styles.searchSection}>
         <h2 style={styles.searchTitle}>Let's Start Learning</h2>
 
-        <div style={{position:"relative", maxWidth:"850px", margin:"0 auto"}}>
-
+        <div style={{ position: "relative", maxWidth: "850px", margin: "0 auto" }}>
           <div style={styles.searchWrapper}>
             <input
               type="text"
@@ -131,14 +157,9 @@ navigate(`/study-material?search=${searchTerm}`)
             </button>
           </div>
 
-          {/* Suggestions Dropdown */}
-
           {suggestions.length > 0 && (
-
             <div style={styles.suggestionBox}>
-
               {suggestions.map((item) => (
-
                 <div
                   key={item.id}
                   style={styles.suggestionItem}
@@ -146,15 +167,10 @@ navigate(`/study-material?search=${searchTerm}`)
                 >
                   {item.title}
                 </div>
-
               ))}
-
             </div>
-
           )}
-
         </div>
-
       </section>
 
       {/* About Section */}
@@ -198,10 +214,7 @@ navigate(`/study-material?search=${searchTerm}`)
             Get Certified in Your Preferred Topics
           </h2>
 
-          <button
-            style={styles.certButton}
-            onClick={handleExploreClick}
-          >
+          <button style={styles.certButton} onClick={handleExploreClick}>
             Click to Explore
           </button>
         </div>
@@ -211,7 +224,6 @@ navigate(`/study-material?search=${searchTerm}`)
     </div>
   );
 }
-
 const styles = {
   page: {
     minHeight: "100vh",
