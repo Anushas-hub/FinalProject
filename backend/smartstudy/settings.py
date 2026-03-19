@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'accounts',
     'pyqs',
     'courses',
+    'author_panel',
 ]
 
 MIDDLEWARE = [

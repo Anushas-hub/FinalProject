@@ -25,6 +25,8 @@ urlpatterns = [
     path('api/', include('accounts.urls')),
     path('api/', include('pyqs.urls')),
     path('api/', include('courses.urls')),
+    path('api/author/', include('author_panel.urls')),
+
 ]
 
 # MEDIA files serve (development)

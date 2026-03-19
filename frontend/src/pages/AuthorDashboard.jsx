@@ -6,6 +6,7 @@ import UploadSection from "../components/author/UploadMaterial";
 import QuizSection from "../components/author/CreateQuiz";
 import LeaderboardSection from "../components/author/Leaderboard";
 import NotificationSection from "../components/author/Notifications";
+import AuthorMaterials from "../components/author/AuthorMaterials"; // ✅ NEW
 
 export default function AuthorDashboard() {
   const navigate = useNavigate();
@@ -14,7 +15,6 @@ export default function AuthorDashboard() {
 
   const [activeSection, setActiveSection] = useState("profile");
 
-  // 🔥 NEW STATE
   const [profile, setProfile] = useState({
     name: "",
     image: null
@@ -27,7 +27,6 @@ export default function AuthorDashboard() {
     if (role !== "author") navigate("/");
   }, [user, role, navigate]);
 
-  // 🔥 FETCH PROFILE FOR SIDEBAR
   useEffect(() => {
     if (!user) return;
 
@@ -41,7 +40,6 @@ export default function AuthorDashboard() {
       });
   }, [user, refreshSidebar]);
 
-  // 🔥 LISTEN FOR PROFILE UPDATE (REAL-TIME SYNC)
   useEffect(() => {
     const handleStorageChange = () => {
       setRefreshSidebar(prev => !prev);
@@ -65,6 +63,8 @@ export default function AuthorDashboard() {
         return <ProfileSection />;
       case "upload":
         return <UploadSection />;
+      case "materials": // ✅ NEW
+        return <AuthorMaterials />;
       case "quiz":
         return <QuizSection />;
       case "leaderboard":
@@ -81,7 +81,6 @@ export default function AuthorDashboard() {
   return (
     <div style={styles.page}>
       
-      {/* HERO */}
       <div style={styles.hero}>
         <div>
           <h1 style={styles.heroTitle}>Author Dashboard</h1>
@@ -98,11 +97,9 @@ export default function AuthorDashboard() {
 
       <div style={styles.wrapper}>
 
-        {/* SIDEBAR */}
         <div style={styles.sidebar}>
           <div style={styles.profileBox}>
 
-            {/* 🔥 PROFILE IMAGE */}
             {profile.image ? (
               <img
                 src={profile.image}
@@ -115,7 +112,6 @@ export default function AuthorDashboard() {
               </div>
             )}
 
-            {/* 🔥 NAME */}
             <h3 style={{ marginTop: "10px" }}>
               {profile.name || user}
             </h3>
@@ -123,38 +119,28 @@ export default function AuthorDashboard() {
             <p style={styles.roleText}>Author Account</p>
           </div>
 
-          <button
-            style={styles.menuBtn}
-            onClick={() => setActiveSection("profile")}
-          >
+          <button style={styles.menuBtn} onClick={() => setActiveSection("profile")}>
             Profile
           </button>
 
-          <button
-            style={styles.menuBtn}
-            onClick={() => setActiveSection("upload")}
-          >
+          <button style={styles.menuBtn} onClick={() => setActiveSection("upload")}>
             Upload Material
           </button>
 
-          <button
-            style={styles.menuBtn}
-            onClick={() => setActiveSection("quiz")}
-          >
+          {/* ✅ NEW BUTTON */}
+          <button style={styles.menuBtn} onClick={() => setActiveSection("materials")}>
+            My Materials
+          </button>
+
+          <button style={styles.menuBtn} onClick={() => setActiveSection("quiz")}>
             Create Quiz
           </button>
 
-          <button
-            style={styles.menuBtn}
-            onClick={() => setActiveSection("leaderboard")}
-          >
+          <button style={styles.menuBtn} onClick={() => setActiveSection("leaderboard")}>
             Leaderboard
           </button>
 
-          <button
-            style={styles.menuBtn}
-            onClick={() => setActiveSection("notifications")}
-          >
+          <button style={styles.menuBtn} onClick={() => setActiveSection("notifications")}>
             Notifications
           </button>
 
@@ -163,7 +149,6 @@ export default function AuthorDashboard() {
           </button>
         </div>
 
-        {/* MAIN CONTENT */}
         <div style={styles.mainContent}>
           <div style={styles.contentArea}>
             {renderSection()}
