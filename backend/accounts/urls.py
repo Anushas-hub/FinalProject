@@ -1,4 +1,5 @@
 from django.urls import path
+from .views import upload_study_material
 from .views import get_author_profile, save_author_profile, delete_author_image
 from .views import (
     signup,
@@ -16,6 +17,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path('upload-material/', upload_study_material),
 
     path('author-profile/<str:username>/', get_author_profile),
     path('save-author-profile/', save_author_profile),

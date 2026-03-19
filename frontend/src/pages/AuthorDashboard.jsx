@@ -14,10 +14,45 @@ export default function AuthorDashboard() {
 
   const [activeSection, setActiveSection] = useState("profile");
 
+  // 🔥 NEW STATE
+  const [profile, setProfile] = useState({
+    name: "",
+    image: null
+  });
+
+  const [refreshSidebar, setRefreshSidebar] = useState(false);
+
   useEffect(() => {
     if (!user) navigate("/login");
     if (role !== "author") navigate("/");
   }, [user, role, navigate]);
+
+  // 🔥 FETCH PROFILE FOR SIDEBAR
+  useEffect(() => {
+    if (!user) return;
+
+    fetch(`http://127.0.0.1:8000/api/author-profile/${user}/`)
+      .then(res => res.json())
+      .then(data => {
+        setProfile({
+          name: data.name || user,
+          image: data.profile_image
+        });
+      });
+  }, [user, refreshSidebar]);
+
+  // 🔥 LISTEN FOR PROFILE UPDATE (REAL-TIME SYNC)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setRefreshSidebar(prev => !prev);
+    };
+
+    window.addEventListener("profileUpdated", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("profileUpdated", handleStorageChange);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -66,10 +101,25 @@ export default function AuthorDashboard() {
         {/* SIDEBAR */}
         <div style={styles.sidebar}>
           <div style={styles.profileBox}>
-            <div style={styles.avatar}>
-              {user.charAt(0).toUpperCase()}
-            </div>
-            <h3 style={{ marginTop: "10px" }}>{user}</h3>
+
+            {/* 🔥 PROFILE IMAGE */}
+            {profile.image ? (
+              <img
+                src={profile.image}
+                alt="profile"
+                style={styles.avatarImage}
+              />
+            ) : (
+              <div style={styles.avatar}>
+                {user.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            {/* 🔥 NAME */}
+            <h3 style={{ marginTop: "10px" }}>
+              {profile.name || user}
+            </h3>
+
             <p style={styles.roleText}>Author Account</p>
           </div>
 
@@ -194,6 +244,14 @@ const styles = {
     color: "#fff",
     fontSize: "26px",
     margin: "0 auto",
+  },
+
+  avatarImage: {
+    width: "70px",
+    height: "70px",
+    borderRadius: "50%",
+    objectFit: "cover",
+    margin: "0 auto"
   },
 
   roleText: {

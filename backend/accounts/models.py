@@ -70,10 +70,8 @@ class Question(models.Model):
 # ---------------- VIEWED TOPICS ----------------
 
 class ViewedTopic(models.Model):
-
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-
     viewed_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -86,13 +84,11 @@ class ViewedTopic(models.Model):
 # ---------------- QUIZ ATTEMPT HISTORY ----------------
 
 class QuizAttempt(models.Model):
-
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
 
     score = models.IntegerField()
     total_questions = models.IntegerField()
-
     attempted_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -100,6 +96,7 @@ class QuizAttempt(models.Model):
 
     def __str__(self):
         return f"{self.user.username} attempted {self.quiz.title}"
+
 
 class Feedback(models.Model):
     username = models.CharField(max_length=150, blank=True)
@@ -109,11 +106,11 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"{self.username} - {self.created_at}"
-    
+
+
 # ---------------- AUTHOR PROFILE ----------------
 
 class AuthorProfile(models.Model):
-
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=200, blank=True)
@@ -127,3 +124,21 @@ class AuthorProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+# 🆕 ---------------- STUDY MATERIAL UPLOAD ----------------
+
+class StudyMaterial(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    title = models.CharField(max_length=200)
+    subject = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+
+    content = models.TextField(blank=True)  # text content
+    file = models.FileField(upload_to="study_materials/", blank=True, null=True)  # PDF
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

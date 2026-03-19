@@ -9,6 +9,7 @@ from .models import Feedback
 from .models import Subject, Module, Quiz, Question, ViewedTopic, QuizAttempt
 from .models import AuthorProfile
 from django.core.files.storage import default_storage
+from .models import StudyMaterial
 
 User = get_user_model()
 
@@ -393,6 +394,37 @@ def delete_author_image(request):
             profile.save()
 
         return Response({"message": "Image deleted"})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+    
+# ---------------- UPLOAD STUDY MATERIAL ----------------
+
+@api_view(['POST'])
+def upload_study_material(request):
+
+    try:
+        username = request.data.get("username")
+
+        user = User.objects.get(username=username)
+
+        title = request.data.get("title")
+        subject = request.data.get("subject")
+        description = request.data.get("description")
+        content = request.data.get("content")
+
+        file = request.FILES.get("file")
+
+        StudyMaterial.objects.create(
+            user=user,
+            title=title,
+            subject=subject,
+            description=description,
+            content=content if content else "",
+            file=file if file else None
+        )
+
+        return Response({"message": "Material uploaded successfully"})
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)
