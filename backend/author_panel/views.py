@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from .models import AuthorStudyMaterial
+from django.http import FileResponse
 
 User = get_user_model()
 
@@ -43,7 +44,10 @@ def get_my_materials(request, username):
         data = []
 
         for m in materials:
-            file_url = request.build_absolute_uri(m.file.url) if m.file else None
+            file_url = (
+                request.build_absolute_uri(f"/api/author/view-pdf/{m.id}/")
+                if m.file else None
+            )
 
             data.append({
                 "id": m.id,
@@ -63,7 +67,21 @@ def get_my_materials(request, username):
         return Response([])
 
 
-# ---------------- DELETE (FIXED) ----------------
+# ---------------- VIEW PDF (🔥 MAIN FIX) ----------------
+def view_pdf(request, material_id):
+    try:
+        material = AuthorStudyMaterial.objects.get(id=material_id)
+
+        response = FileResponse(material.file.open('rb'), content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="{material.file.name}"'
+
+        return response
+
+    except AuthorStudyMaterial.DoesNotExist:
+        return Response({"error": "Not found"}, status=404)
+
+
+# ---------------- DELETE ----------------
 @api_view(['DELETE'])
 def delete_material(request, material_id):
     try:
@@ -96,8 +114,19 @@ def update_material(request, material_id):
         material.course = request.data.get("course", material.course)
         material.semester = request.data.get("semester", material.semester)
 
-        if "file" in request.FILES:
-            material.file = request.FILES["file"]
+        # 🔥 REMOVE FILE LOGIC
+        remove_file = request.data.get("remove_file")
+
+        if remove_file == "true":
+            if material.file:
+                material.file.delete()
+                material.file = None
+
+        # 🔥 REPLACE FILE LOGIC
+        elif request.FILES.get("file"):
+            if material.file:
+                material.file.delete()
+            material.file = request.FILES.get("file")
 
         material.save()
 

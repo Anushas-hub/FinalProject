@@ -16,6 +16,10 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
     file: null,
   });
 
+  const [errors, setErrors] = useState({});
+  const [existingFile, setExistingFile] = useState(null);
+  const [removeFile, setRemoveFile] = useState(false);
+
   // 🔥 PREFILL WHEN EDITING
   useEffect(() => {
     if (editItem) {
@@ -28,10 +32,43 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
         content: editItem.content || "",
         file: null,
       });
+
+      setExistingFile(editItem.file || null);
+
+      // 🔥 AUTO MODE SET
+      if (editItem.file && editItem.content) {
+        setMode("both");
+      } else if (editItem.file) {
+        setMode("pdf");
+      } else {
+        setMode("content");
+      }
     }
   }, [editItem]);
 
+  const validateForm = () => {
+    let newErrors = {};
+
+    if (!formData.title.trim()) newErrors.title = "Title is required";
+    if (!formData.subject.trim()) newErrors.subject = "Subject is required";
+    if (!formData.description.trim()) newErrors.description = "Description is required";
+
+    if ((mode === "content" || mode === "both") && !formData.content.trim()) {
+      newErrors.content = "Content is required";
+    }
+
+    if ((mode === "pdf" || mode === "both") && !formData.file && !existingFile) {
+      newErrors.file = "PDF file is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+
+    if (!validateForm()) return;
+
     try {
       const data = new FormData();
 
@@ -50,7 +87,11 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
         data.append("file", formData.file);
       }
 
-      // 🔥 SWITCH API (CREATE vs UPDATE)
+      // 🔥 REMOVE FILE FLAG
+      if (removeFile) {
+        data.append("remove_file", "true");
+      }
+
       const url = editItem
         ? `http://127.0.0.1:8000/api/author/update-material/${editItem.id}/`
         : "http://127.0.0.1:8000/api/author/upload-material/";
@@ -67,7 +108,6 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
       if (res.ok) {
         alert(result.message || "Success");
 
-        // 🔥 RESET ONLY IF CREATE
         if (!editItem) {
           setFormData({
             title: "",
@@ -80,6 +120,7 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
           });
         }
 
+        setErrors({});
         if (onSuccess) onSuccess();
 
       } else {
@@ -107,22 +148,19 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
           <button onClick={() => setMode("both")} style={mode === "both" ? styles.activeBtn : styles.modeBtn}>Content + PDF</button>
         </div>
 
-        <input
-          style={styles.input}
-          placeholder="Title"
+        <input style={styles.input} placeholder="Title"
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
         />
+        {errors.title && <span style={styles.error}>{errors.title}</span>}
 
-        <input
-          style={styles.input}
-          placeholder="Subject"
+        <input style={styles.input} placeholder="Subject"
           value={formData.subject}
           onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
         />
+        {errors.subject && <span style={styles.error}>{errors.subject}</span>}
 
-        <select
-          style={styles.input}
+        <select style={styles.input}
           value={formData.course}
           onChange={(e) => setFormData({ ...formData, course: e.target.value })}
         >
@@ -130,8 +168,7 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
           <option value="bsc_cs">BSc CS</option>
         </select>
 
-        <select
-          style={styles.input}
+        <select style={styles.input}
           value={formData.semester}
           onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
         >
@@ -143,35 +180,54 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
           <option value="sem6">Sem 6</option>
         </select>
 
-        <textarea
-          style={styles.textarea}
-          placeholder="Description"
+        <textarea style={styles.textarea} placeholder="Description"
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
         />
+        {errors.description && <span style={styles.error}>{errors.description}</span>}
 
         {(mode === "content" || mode === "both") && (
-          <textarea
-            style={styles.textarea}
-            placeholder="Write Content..."
-            value={formData.content}
-            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          />
+          <>
+            <textarea style={styles.textarea} placeholder="Write Content..."
+              value={formData.content}
+              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+            />
+            {errors.content && <span style={styles.error}>{errors.content}</span>}
+          </>
+        )}
+
+        {/* 🔥 EXISTING FILE SECTION */}
+        {existingFile && !removeFile && (
+          <div style={styles.fileBox}>
+            <p>Existing PDF:</p>
+            <button onClick={() => window.open(existingFile, "_blank")}>
+              View PDF
+            </button>
+
+            <button
+              style={styles.deleteBtn}
+              onClick={() => setRemoveFile(true)}
+            >
+              Remove PDF
+            </button>
+          </div>
         )}
 
         {(mode === "pdf" || mode === "both") && (
-          <input
-            type="file"
-            style={styles.fileInput}
-            onChange={(e) => setFormData({ ...formData, file: e.target.files[0] })}
-          />
+          <>
+            <input
+              type="file"
+              style={styles.fileInput}
+              onChange={(e) => setFormData({ ...formData, file: e.target.files[0] })}
+            />
+            {errors.file && <span style={styles.error}>{errors.file}</span>}
+          </>
         )}
 
         <button style={styles.primaryBtn} onClick={handleSubmit}>
           {editItem ? "Update Material" : "Upload Material"}
         </button>
 
-        {/* 🔥 CANCEL BUTTON ONLY IN EDIT */}
         {editItem && (
           <button style={styles.cancelBtn} onClick={onCancel}>
             Cancel
@@ -197,10 +253,7 @@ const styles = {
     gap: "18px",
   },
 
-  modeRow: {
-    display: "flex",
-    gap: "10px"
-  },
+  modeRow: { display: "flex", gap: "10px" },
 
   modeBtn: {
     padding: "10px 15px",
@@ -232,8 +285,12 @@ const styles = {
     minHeight: "100px",
   },
 
-  fileInput: {
+  fileInput: { padding: "10px" },
+
+  fileBox: {
     padding: "10px",
+    border: "1px dashed #aaa",
+    borderRadius: "10px",
   },
 
   primaryBtn: {
@@ -252,5 +309,21 @@ const styles = {
     background: "#999",
     color: "#fff",
     cursor: "pointer",
+  },
+
+  deleteBtn: {
+    marginLeft: "10px",
+    background: "red",
+    color: "#fff",
+    border: "none",
+    padding: "6px 10px",
+    borderRadius: "6px",
+    cursor: "pointer"
+  },
+
+  error: {
+    color: "red",
+    fontSize: "13px",
+    marginTop: "-10px"
   }
 };

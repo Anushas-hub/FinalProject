@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import UploadMaterial from "./UploadMaterial"; // 🔥 IMPORTANT
+import UploadMaterial from "./UploadMaterial";
 
 export default function AuthorMaterials() {
 
   const username = localStorage.getItem("user");
   const [materials, setMaterials] = useState([]);
 
-  const [editingItem, setEditingItem] = useState(null); // 🔥 FULL OBJECT
+  const [editingItem, setEditingItem] = useState(null);
 
   const fetchMaterials = async () => {
     try {
@@ -22,7 +22,6 @@ export default function AuthorMaterials() {
     fetchMaterials();
   }, []);
 
-  // ✅ DELETE FIXED
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this material?")) return;
 
@@ -45,7 +44,6 @@ export default function AuthorMaterials() {
     }
   };
 
-  // 🔥 OPEN FULL PAGE EDIT
   if (editingItem) {
     return (
       <UploadMaterial
@@ -75,29 +73,18 @@ export default function AuthorMaterials() {
             <p><b>Semester:</b> {item.semester}</p>
             <p>{item.description}</p>
 
-            {/* ✅ PDF PREVIEW */}
+            {/* ✅ OPEN PDF IN NEW TAB */}
             {item.file && (
-              <>
-                <a href={item.file} target="_blank" rel="noreferrer">
-                  View PDF
-                </a>
-
-                <iframe
-                  src={item.file}
-                  title="pdf"
-                  style={{
-                    width: "100%",
-                    height: "300px",
-                    marginTop: "10px",
-                    borderRadius: "10px"
-                  }}
-                />
-              </>
+              <button
+                style={styles.viewBtn}
+                onClick={() => window.open(item.file, "_blank")}
+              >
+                View PDF
+              </button>
             )}
 
             <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
               
-              {/* 🔥 EDIT FULL PAGE */}
               <button
                 style={styles.editBtn}
                 onClick={() => setEditingItem(item)}
@@ -131,6 +118,16 @@ const styles = {
     borderRadius: "15px",
     marginBottom: "15px",
     boxShadow: "0 6px 15px rgba(0,0,0,0.05)",
+  },
+
+  viewBtn: {
+    padding: "10px 15px",
+    border: "none",
+    background: "#10b981",
+    color: "#fff",
+    borderRadius: "10px",
+    cursor: "pointer",
+    marginTop: "10px"
   },
 
   editBtn: {
