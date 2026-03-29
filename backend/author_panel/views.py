@@ -1,13 +1,14 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
-from .models import AuthorStudyMaterial
+from .models import AuthorStudyMaterial, AuthorQuiz, QuizQuestion
 from django.http import FileResponse
 
 User = get_user_model()
 
 
-# ---------------- UPLOAD ----------------
+# ================= MATERIAL SYSTEM (UNCHANGED) =================
+
 @api_view(['POST'])
 def upload_material(request):
     try:
@@ -34,7 +35,6 @@ def upload_material(request):
         return Response({"error": str(e)}, status=400)
 
 
-# ---------------- GET MY MATERIALS ----------------
 @api_view(['GET'])
 def get_my_materials(request, username):
     try:
@@ -67,7 +67,6 @@ def get_my_materials(request, username):
         return Response([])
 
 
-# ---------------- VIEW PDF (🔥 MAIN FIX) ----------------
 def view_pdf(request, material_id):
     try:
         material = AuthorStudyMaterial.objects.get(id=material_id)
@@ -81,7 +80,6 @@ def view_pdf(request, material_id):
         return Response({"error": "Not found"}, status=404)
 
 
-# ---------------- DELETE ----------------
 @api_view(['DELETE'])
 def delete_material(request, material_id):
     try:
@@ -101,7 +99,6 @@ def delete_material(request, material_id):
         return Response({"error": str(e)}, status=400)
 
 
-# ---------------- UPDATE ----------------
 @api_view(['PUT'])
 def update_material(request, material_id):
     try:
@@ -114,7 +111,6 @@ def update_material(request, material_id):
         material.course = request.data.get("course", material.course)
         material.semester = request.data.get("semester", material.semester)
 
-        # 🔥 REMOVE FILE LOGIC
         remove_file = request.data.get("remove_file")
 
         if remove_file == "true":
@@ -122,7 +118,6 @@ def update_material(request, material_id):
                 material.file.delete()
                 material.file = None
 
-        # 🔥 REPLACE FILE LOGIC
         elif request.FILES.get("file"):
             if material.file:
                 material.file.delete()
@@ -137,3 +132,130 @@ def update_material(request, material_id):
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
+
+# ================= QUIZ SYSTEM (NEW) =================
+
+# -------- CREATE QUIZ --------
+@api_view(['POST'])
+def create_quiz(request):
+    try:
+        username = request.data.get("username")
+        user = User.objects.get(username=username)
+
+        if user.role != "author":
+            return Response({"error": "Only authors can create quiz"}, status=403)
+
+        material_id = request.data.get("material_id")
+
+        linked_material = None
+        if material_id:
+            linked_material = AuthorStudyMaterial.objects.get(id=material_id)
+
+        quiz = AuthorQuiz.objects.create(
+            user=user,
+            title=request.data.get("title"),
+            description=request.data.get("description"),
+            difficulty=request.data.get("difficulty"),
+            time_limit=request.data.get("time_limit"),
+            linked_material=linked_material
+        )
+
+        return Response({
+            "message": "Quiz created successfully",
+            "quiz_id": quiz.id
+        })
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+# -------- ADD QUESTIONS --------
+@api_view(['POST'])
+def add_question(request):
+    try:
+        quiz_id = request.data.get("quiz_id")
+        quiz = AuthorQuiz.objects.get(id=quiz_id)
+
+        QuizQuestion.objects.create(
+            quiz=quiz,
+            question=request.data.get("question"),
+            option_a=request.data.get("option_a"),
+            option_b=request.data.get("option_b"),
+            option_c=request.data.get("option_c"),
+            option_d=request.data.get("option_d"),
+            correct_answer=request.data.get("correct_answer"),
+            marks=request.data.get("marks"),
+            explanation=request.data.get("explanation", "")
+        )
+
+        return Response({"message": "Question added successfully"})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+# -------- GET MY QUIZZES --------
+@api_view(['GET'])
+def get_my_quizzes(request, username):
+    try:
+        user = User.objects.get(username=username)
+        quizzes = AuthorQuiz.objects.filter(user=user)
+
+        data = []
+
+        for q in quizzes:
+            data.append({
+                "id": q.id,
+                "title": q.title,
+                "difficulty": q.difficulty,
+                "time_limit": q.time_limit,
+                "created_at": q.created_at,
+                "linked_material": q.linked_material.id if q.linked_material else None
+            })
+
+        return Response(data)
+
+    except:
+        return Response([])
+
+
+# -------- DELETE QUIZ --------
+@api_view(['DELETE'])
+def delete_quiz(request, quiz_id):
+    try:
+        quiz = AuthorQuiz.objects.get(id=quiz_id)
+        quiz.delete()
+
+        return Response({"message": "Quiz deleted successfully"})
+
+    except AuthorQuiz.DoesNotExist:
+        return Response({"error": "Quiz not found"}, status=404)
+
+
+# -------- GET QUESTIONS OF QUIZ --------
+@api_view(['GET'])
+def get_quiz_questions(request, quiz_id):
+    try:
+        quiz = AuthorQuiz.objects.get(id=quiz_id)
+        questions = quiz.questions.all()
+
+        data = []
+
+        for q in questions:
+            data.append({
+                "id": q.id,
+                "question": q.question,
+                "option_a": q.option_a,
+                "option_b": q.option_b,
+                "option_c": q.option_c,
+                "option_d": q.option_d,
+                "correct_answer": q.correct_answer,
+                "marks": q.marks,
+                "explanation": q.explanation
+            })
+
+        return Response(data)
+
+    except:
+        return Response([])

@@ -36,3 +36,56 @@ class AuthorStudyMaterial(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# ================= QUIZ SYSTEM (NEW - SAFE ADDITION) =================
+
+class AuthorQuiz(models.Model):
+
+    DIFFICULTY_CHOICES = (
+        ("easy", "Easy"),
+        ("medium", "Medium"),
+        ("hard", "Hard"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+
+    difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default="easy")
+    time_limit = models.IntegerField(help_text="Time in minutes", default=10)
+
+    # 🔗 OPTIONAL LINK WITH STUDY MATERIAL (NO CLASH)
+    linked_material = models.ForeignKey(
+        AuthorStudyMaterial,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="quizzes"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class QuizQuestion(models.Model):
+
+    quiz = models.ForeignKey(AuthorQuiz, on_delete=models.CASCADE, related_name="questions")
+
+    question = models.TextField()
+
+    option_a = models.CharField(max_length=255)
+    option_b = models.CharField(max_length=255)
+    option_c = models.CharField(max_length=255)
+    option_d = models.CharField(max_length=255)
+
+    correct_answer = models.CharField(max_length=1)
+
+    marks = models.IntegerField(default=1)
+    explanation = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.question[:50]
