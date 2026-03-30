@@ -21,24 +21,20 @@ class AuthorStudyMaterial(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
     title = models.CharField(max_length=200)
     subject = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-
     course = models.CharField(max_length=20, choices=COURSE_CHOICES, default="bsc_it")
     semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES, default="sem1")
-
     content = models.TextField(blank=True)
     file = models.FileField(upload_to="author_materials/", blank=True, null=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
 
-# ================= QUIZ SYSTEM (UPGRADED - SAFE ADDITION) =================
+# ================= QUIZ SYSTEM =================
 
 class AuthorQuiz(models.Model):
 
@@ -48,36 +44,36 @@ class AuthorQuiz(models.Model):
         ("hard", "Hard"),
     )
 
+    # ✅ ONLY material link_type kept — course & pyq removed
     LINK_TYPE_CHOICES = (
         ("material", "Study Material"),
-        ("course", "Course"),
-        ("pyq", "PYQ"),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-
-    difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default="easy")
+    difficulty = models.CharField(
+        max_length=10, choices=DIFFICULTY_CHOICES, default="easy"
+    )
     time_limit = models.IntegerField(help_text="Time in minutes", default=10)
 
-    # 🔗 OLD SAFE LINK (DO NOT REMOVE)
+    # Linked material FK (safe - unchanged)
     linked_material = models.ForeignKey(
         AuthorStudyMaterial,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="quizzes"
+        related_name="quizzes",
     )
 
-    # 🔗 NEW FLEXIBLE LINK SYSTEM
+    # ✅ link_type now only supports "material"
     link_type = models.CharField(
         max_length=20,
         choices=LINK_TYPE_CHOICES,
-        default="material"
+        default="material",
     )
 
+    # linked_id kept for DB compatibility but not used in frontend
     linked_id = models.IntegerField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -88,17 +84,15 @@ class AuthorQuiz(models.Model):
 
 class QuizQuestion(models.Model):
 
-    quiz = models.ForeignKey(AuthorQuiz, on_delete=models.CASCADE, related_name="questions")
-
+    quiz = models.ForeignKey(
+        AuthorQuiz, on_delete=models.CASCADE, related_name="questions"
+    )
     question = models.TextField()
-
     option_a = models.CharField(max_length=255)
     option_b = models.CharField(max_length=255)
-    option_c = models.CharField(max_length=255)
-    option_d = models.CharField(max_length=255)
-
+    option_c = models.CharField(max_length=255, blank=True)
+    option_d = models.CharField(max_length=255, blank=True)
     correct_answer = models.CharField(max_length=1)
-
     marks = models.IntegerField(default=1)
     explanation = models.TextField(blank=True)
 

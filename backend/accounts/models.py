@@ -126,7 +126,7 @@ class AuthorProfile(models.Model):
         return self.user.username
 
 
-# 🆕 ---------------- STUDY MATERIAL UPLOAD ----------------
+# ---------------- STUDY MATERIAL UPLOAD ----------------
 
 class StudyMaterial(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -135,10 +135,33 @@ class StudyMaterial(models.Model):
     subject = models.CharField(max_length=200)
     description = models.TextField(blank=True)
 
-    content = models.TextField(blank=True)  # text content
-    file = models.FileField(upload_to="study_materials/", blank=True, null=True)  # PDF
+    content = models.TextField(blank=True)
+    file = models.FileField(upload_to="study_materials/", blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
+
+# ---------------- 🆕 FOLLOW SYSTEM ----------------
+
+class Follow(models.Model):
+    follower = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="following"
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="followers"
+    )
+    followed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("follower", "author")
+        ordering = ["-followed_at"]
+
+    def __str__(self):
+        return f"{self.follower.username} follows {self.author.username}"

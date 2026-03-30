@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function CreateQuiz() {
-  const username = localStorage.getItem("username");
-
+  const username = localStorage.getItem("user");
   const [materials, setMaterials] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,9 +14,7 @@ export default function CreateQuiz() {
     description: "",
     difficulty: "easy",
     time_limit: 10,
-    link_type: "material",
     material_id: "",
-    linked_id: "",
   });
 
   const [questions, setQuestions] = useState([]);
@@ -37,19 +34,15 @@ export default function CreateQuiz() {
     if (username) fetchData();
   }, [username]);
 
-  // ─── AUTO TITLE ───
+  // ─── AUTO TITLE from material ───
   useEffect(() => {
-    if (quizData.link_type === "material" && quizData.material_id) {
+    if (quizData.material_id) {
       const selected = materials.find((m) => m.id == quizData.material_id);
       if (selected) {
         setQuizData((prev) => ({ ...prev, title: `${selected.title} Quiz` }));
       }
-    } else if (quizData.link_type === "course" && quizData.linked_id) {
-      setQuizData((prev) => ({ ...prev, title: `Course ${quizData.linked_id} Quiz` }));
-    } else if (quizData.link_type === "pyq" && quizData.linked_id) {
-      setQuizData((prev) => ({ ...prev, title: `PYQ ${quizData.linked_id} Quiz` }));
     }
-  }, [quizData.material_id, quizData.linked_id, quizData.link_type]);
+  }, [quizData.material_id, materials]);
 
   const filteredMaterials = materials.filter((m) =>
     m.title.toLowerCase().includes(search.toLowerCase())
@@ -59,7 +52,16 @@ export default function CreateQuiz() {
   const addQuestion = () => {
     setQuestions([
       ...questions,
-      { question: "", optionA: "", optionB: "", optionC: "", optionD: "", correct: "A", marks: 1, explanation: "" },
+      {
+        question: "",
+        optionA: "",
+        optionB: "",
+        optionC: "",
+        optionD: "",
+        correct: "A",
+        marks: 1,
+        explanation: "",
+      },
     ]);
   };
 
@@ -87,11 +89,16 @@ export default function CreateQuiz() {
       return;
     }
 
-    // Frontend validation
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
-      if (!q.question.trim()) { setErrorMsg(`Q${i + 1}: Question text is empty.`); return; }
-      if (!q.optionA.trim() || !q.optionB.trim()) { setErrorMsg(`Q${i + 1}: Option A & B are required.`); return; }
+      if (!q.question.trim()) {
+        setErrorMsg(`Q${i + 1}: Question text is empty.`);
+        return;
+      }
+      if (!q.optionA.trim() || !q.optionB.trim()) {
+        setErrorMsg(`Q${i + 1}: Option A & B are required.`);
+        return;
+      }
     }
 
     const formattedQuestions = questions.map((q) => ({
@@ -109,17 +116,24 @@ export default function CreateQuiz() {
     try {
       await axios.post(
         "http://127.0.0.1:8000/api/author/create-quiz-with-questions/",
-        { username, ...quizData, questions: formattedQuestions }
+        {
+          username,
+          ...quizData,
+          link_type: "material",
+          questions: formattedQuestions,
+        }
       );
 
-      setSuccessMsg("✅ Quiz Created Successfully!");
+      setSuccessMsg("Quiz Created Successfully! ✅");
       setQuizData({
-        title: "", description: "", difficulty: "easy",
-        time_limit: 10, link_type: "material", material_id: "", linked_id: "",
+        title: "",
+        description: "",
+        difficulty: "easy",
+        time_limit: 10,
+        material_id: "",
       });
       setQuestions([]);
       setSearch("");
-
     } catch (err) {
       const msg = err.response?.data?.error || "Something went wrong.";
       setErrorMsg(`❌ ${msg}`);
@@ -131,146 +145,148 @@ export default function CreateQuiz() {
   return (
     <div style={S.page}>
       <div style={S.header}>
-        <h2 style={S.heading}>🧠 Create Quiz</h2>
-        <p style={S.sub}>Build a quiz and link it to your study material, course, or PYQ</p>
+        <h2 style={S.heading}>Create Quiz</h2>
+        <p style={S.sub}>Build a quiz and link it to your study material</p>
       </div>
 
-      {/* ── SUCCESS / ERROR ── */}
       {successMsg && <div style={S.success}>{successMsg}</div>}
       {errorMsg && <div style={S.error}>{errorMsg}</div>}
 
-      {/* ── SECTION 1: BASIC INFO ── */}
+      {/* ── BASIC INFO ── */}
       <div style={S.card}>
         <div style={S.cardHeader}>
-          <span style={S.cardIcon}>📋</span>
-          <h3 style={S.cardTitle}>Basic Info</h3>
+        <h3 style={S.cardTitle}>Basic Info</h3>
         </div>
 
         <label style={S.label}>Quiz Title</label>
         <input
           style={S.input}
-          placeholder="Quiz title (auto-fills or type manually)"
+          placeholder="Quiz title (auto-fills when material selected)"
           value={quizData.title}
           onChange={(e) => setQuizData({ ...quizData, title: e.target.value })}
         />
 
-        <label style={S.label}>Description (optional)</label>
+        <label style={S.label}>Description(optional)</label>
         <textarea
           style={{ ...S.input, height: "80px", resize: "vertical" }}
           placeholder="Briefly describe this quiz..."
           value={quizData.description}
-          onChange={(e) => setQuizData({ ...quizData, description: e.target.value })}
+          onChange={(e) =>
+            setQuizData({ ...quizData, description: e.target.value })
+          }
         />
 
         <div style={S.row}>
+          {/* DIFFICULTY */}
           <div style={{ flex: 1 }}>
             <label style={S.label}>Difficulty</label>
             <select
               style={S.input}
               value={quizData.difficulty}
-              onChange={(e) => setQuizData({ ...quizData, difficulty: e.target.value })}
+              onChange={(e) =>
+                setQuizData({ ...quizData, difficulty: e.target.value })
+              }
             >
-              <option value="easy">🟢 Easy</option>
-              <option value="medium">🟡 Medium</option>
-              <option value="hard">🔴 Hard</option>
+              <option value="easy">Easy 🟢</option>
+              <option value="medium">Medium 🟡</option>
+              <option value="hard">Hard 🔴</option>
             </select>
           </div>
 
+          {/* TIME LIMIT — proper dropdown */}
           <div style={{ flex: 1 }}>
-            <label style={S.label}>Time Limit (minutes)</label>
-            <input
-              style={S.input}
-              type="number"
-              min="1"
-              max="180"
-              value={quizData.time_limit}
-              onChange={(e) => setQuizData({ ...quizData, time_limit: e.target.value })}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ── SECTION 2: LINK CONTENT ── */}
-      <div style={S.card}>
-        <div style={S.cardHeader}>
-          <span style={S.cardIcon}>🔗</span>
-          <h3 style={S.cardTitle}>Link Content</h3>
-        </div>
-
-        <label style={S.label}>Link Type</label>
-        <select
-          style={S.input}
-          value={quizData.link_type}
-          onChange={(e) =>
-            setQuizData({ ...quizData, link_type: e.target.value, material_id: "", linked_id: "" })
-          }
-        >
-          <option value="material">📚 Study Material</option>
-          <option value="course">🎓 Course</option>
-          <option value="pyq">📝 PYQ</option>
-        </select>
-
-        {quizData.link_type === "material" && (
-          <>
-            <label style={S.label}>Search Material</label>
-            <input
-              style={S.input}
-              placeholder="Type to search your materials..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-            <label style={S.label}>Select Material</label>
+            <label style={S.label}>⏱ Time Limit</label>
             <select
               style={S.input}
-              value={quizData.material_id}
-              onChange={(e) => setQuizData({ ...quizData, material_id: e.target.value })}
+              value={quizData.time_limit}
+              onChange={(e) =>
+                setQuizData({
+                  ...quizData,
+                  time_limit: parseInt(e.target.value),
+                })
+              }
             >
-              <option value="">— Select a material —</option>
-              {filteredMaterials.length === 0 && (
-                <option disabled>No materials found</option>
-              )}
-              {filteredMaterials.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.title} ({m.subject})
-                </option>
-              ))}
+              <option value="5">5 minutes</option>
+              <option value="10">10 minutes</option>
+              <option value="15">15 minutes</option>
+              <option value="20">20 minutes</option>
+              <option value="30">30 minutes</option>
+              <option value="45">45 minutes</option>
+              <option value="60">1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
             </select>
-          </>
-        )}
 
-        {quizData.link_type === "course" && (
-          <>
-            <label style={S.label}>Course ID</label>
-            <input
-              style={S.input}
-              placeholder="Enter Course ID (e.g. 3)"
-              type="number"
-              value={quizData.linked_id}
-              onChange={(e) => setQuizData({ ...quizData, linked_id: e.target.value })}
-            />
-          </>
-        )}
-
-        {quizData.link_type === "pyq" && (
-          <>
-            <label style={S.label}>PYQ ID</label>
-            <input
-              style={S.input}
-              placeholder="Enter PYQ ID (e.g. 5)"
-              type="number"
-              value={quizData.linked_id}
-              onChange={(e) => setQuizData({ ...quizData, linked_id: e.target.value })}
-            />
-          </>
-        )}
+            {/* TIMER PREVIEW BADGE */}
+            <div style={S.timerBadge}>
+              ⏳ Students will get{" "}
+              <strong>
+                {quizData.time_limit >= 60
+                  ? `${quizData.time_limit / 60} hr${quizData.time_limit > 60 ? "s" : ""}`
+                  : `${quizData.time_limit} min`}
+              </strong>{" "}
+              to complete this quiz
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* ── SECTION 3: QUESTIONS ── */}
+      {/* ── LINK MATERIAL ── */}
       <div style={S.card}>
         <div style={S.cardHeader}>
-          <span style={S.cardIcon}>❓</span>
+          <h3 style={S.cardTitle}>Link Study Material</h3>
+        </div>
+
+        <label style={S.label}>Search Material</label>
+        <input
+          style={S.input}
+          placeholder="Type to search your materials..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <label style={S.label}>Select Material</label>
+        <select
+          style={S.input}
+          value={quizData.material_id}
+          onChange={(e) =>
+            setQuizData({ ...quizData, material_id: e.target.value })
+          }
+        >
+          <option value="">— Select a material (optional) —</option>
+          {filteredMaterials.length === 0 && (
+            <option disabled>No materials found</option>
+          )}
+          {filteredMaterials.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.title} ({m.subject})
+            </option>
+          ))}
+        </select>
+
+        {/* SELECTED MATERIAL PREVIEW */}
+        {quizData.material_id && (() => {
+          const sel = materials.find((m) => m.id == quizData.material_id);
+          return sel ? (
+            <div style={S.materialPreview}>
+              <span style={S.previewIcon}>📖</span>
+              <div>
+                <div style={S.previewTitle}>{sel.title}</div>
+                <div style={S.previewSub}>
+                  {sel.subject} &nbsp;|&nbsp; {sel.course?.toUpperCase()} &nbsp;|&nbsp; {sel.semester?.toUpperCase()}
+                </div>
+              </div>
+            </div>
+          ) : null;
+        })()}
+      </div>
+
+      {/* ── QUESTIONS ── */}
+      <div style={S.card}>
+        <div style={S.cardHeader}>
           <h3 style={S.cardTitle}>Questions ({questions.length})</h3>
+            <span style={S.cardIcon}>❓</span>
+
         </div>
 
         {questions.length === 0 && (
@@ -293,7 +309,9 @@ export default function CreateQuiz() {
               style={{ ...S.input, height: "70px", resize: "vertical" }}
               placeholder="Enter question text..."
               value={q.question}
-              onChange={(e) => handleQuestionChange(index, "question", e.target.value)}
+              onChange={(e) =>
+                handleQuestionChange(index, "question", e.target.value)
+              }
             />
 
             <div style={S.optionsGrid}>
@@ -304,7 +322,9 @@ export default function CreateQuiz() {
                     style={S.input}
                     placeholder={`Option ${opt}`}
                     value={q[`option${opt}`]}
-                    onChange={(e) => handleQuestionChange(index, `option${opt}`, e.target.value)}
+                    onChange={(e) =>
+                      handleQuestionChange(index, `option${opt}`, e.target.value)
+                    }
                   />
                 </div>
               ))}
@@ -316,7 +336,9 @@ export default function CreateQuiz() {
                 <select
                   style={S.input}
                   value={q.correct}
-                  onChange={(e) => handleQuestionChange(index, "correct", e.target.value)}
+                  onChange={(e) =>
+                    handleQuestionChange(index, "correct", e.target.value)
+                  }
                 >
                   <option value="A">✅ Option A</option>
                   <option value="B">✅ Option B</option>
@@ -327,13 +349,19 @@ export default function CreateQuiz() {
 
               <div style={{ flex: 1 }}>
                 <label style={S.label}>Marks</label>
-                <input
+                <select
                   style={S.input}
-                  type="number"
-                  min="1"
                   value={q.marks}
-                  onChange={(e) => handleQuestionChange(index, "marks", parseInt(e.target.value))}
-                />
+                  onChange={(e) =>
+                    handleQuestionChange(index, "marks", parseInt(e.target.value))
+                  }
+                >
+                  <option value="1">1 mark</option>
+                  <option value="2">2 marks</option>
+                  <option value="3">3 marks</option>
+                  <option value="4">4 marks</option>
+                  <option value="5">5 marks</option>
+                </select>
               </div>
             </div>
 
@@ -342,7 +370,9 @@ export default function CreateQuiz() {
               style={S.input}
               placeholder="Why is this the correct answer?"
               value={q.explanation}
-              onChange={(e) => handleQuestionChange(index, "explanation", e.target.value)}
+              onChange={(e) =>
+                handleQuestionChange(index, "explanation", e.target.value)
+              }
             />
           </div>
         ))}
@@ -351,6 +381,21 @@ export default function CreateQuiz() {
           + Add Question
         </button>
       </div>
+
+      {/* ── QUIZ SUMMARY ── */}
+      {questions.length > 0 && (
+        <div style={S.summaryBox}>
+          <span>📊 <strong>{questions.length}</strong> questions</span>
+          <span>⏱ <strong>{quizData.time_limit} min</strong></span>
+          <span>🎯 <strong>{quizData.difficulty}</strong></span>
+          <span>
+            💯 Total:{" "}
+            <strong>
+              {questions.reduce((sum, q) => sum + (q.marks || 1), 0)} marks
+            </strong>
+          </span>
+        </div>
+      )}
 
       {/* ── SUBMIT ── */}
       <button
@@ -364,9 +409,6 @@ export default function CreateQuiz() {
   );
 }
 
-// ─────────────────────────────────────────
-// STYLES
-// ─────────────────────────────────────────
 const S = {
   page: {
     maxWidth: "820px",
@@ -374,20 +416,14 @@ const S = {
     padding: "10px 0 40px",
     fontFamily: "'Segoe UI', sans-serif",
   },
-  header: {
-    marginBottom: "24px",
-  },
+  header: { marginBottom: "24px" },
   heading: {
     fontSize: "24px",
     fontWeight: "700",
     color: "#1e1b4b",
     margin: "0 0 4px",
   },
-  sub: {
-    fontSize: "14px",
-    color: "#6b7280",
-    margin: 0,
-  },
+  sub: { fontSize: "14px", color: "#6b7280", margin: 0 },
   card: {
     background: "#ffffff",
     borderRadius: "16px",
@@ -430,12 +466,37 @@ const S = {
     background: "#fafafa",
     boxSizing: "border-box",
     outline: "none",
-    transition: "border-color 0.2s",
   },
-  row: {
+  row: { display: "flex", gap: "14px", alignItems: "flex-start" },
+  timerBadge: {
+    background: "#eff6ff",
+    color: "#1d4ed8",
+    padding: "8px 12px",
+    borderRadius: "8px",
+    fontSize: "12px",
+    marginTop: "-8px",
+    marginBottom: "8px",
+  },
+  materialPreview: {
     display: "flex",
-    gap: "14px",
-    alignItems: "flex-start",
+    alignItems: "center",
+    gap: "12px",
+    background: "#f0fdf4",
+    border: "1.5px solid #bbf7d0",
+    borderRadius: "10px",
+    padding: "12px",
+    marginTop: "-6px",
+  },
+  previewIcon: { fontSize: "24px" },
+  previewTitle: {
+    fontWeight: "700",
+    fontSize: "14px",
+    color: "#14532d",
+  },
+  previewSub: {
+    fontSize: "12px",
+    color: "#16a34a",
+    marginTop: "2px",
   },
   qBox: {
     background: "#f8fafc",
@@ -491,6 +552,18 @@ const S = {
     cursor: "pointer",
     fontSize: "13px",
     fontWeight: "600",
+  },
+  summaryBox: {
+    display: "flex",
+    gap: "20px",
+    flexWrap: "wrap",
+    background: "#f5f3ff",
+    border: "1.5px solid #ddd6fe",
+    borderRadius: "12px",
+    padding: "14px 20px",
+    marginBottom: "16px",
+    fontSize: "14px",
+    color: "#4c1d95",
   },
   submitBtn: {
     width: "100%",

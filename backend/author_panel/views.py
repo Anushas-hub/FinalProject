@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from .models import AuthorStudyMaterial, AuthorQuiz, QuizQuestion
 from django.http import FileResponse
+from accounts.models import Follow, AuthorProfile
 
 User = get_user_model()
 
@@ -26,7 +27,7 @@ def upload_material(request):
             course=request.data.get("course"),
             semester=request.data.get("semester"),
             content=request.data.get("content", ""),
-            file=request.FILES.get("file")
+            file=request.FILES.get("file"),
         )
 
         return Response({"message": "Material uploaded successfully"})
@@ -42,13 +43,12 @@ def get_my_materials(request, username):
         materials = AuthorStudyMaterial.objects.filter(user=user)
 
         data = []
-
         for m in materials:
             file_url = (
                 request.build_absolute_uri(f"/api/author/view-pdf/{m.id}/")
-                if m.file else None
+                if m.file
+                else None
             )
-
             data.append({
                 "id": m.id,
                 "title": m.title,
@@ -58,7 +58,7 @@ def get_my_materials(request, username):
                 "description": m.description,
                 "content": m.content,
                 "file": file_url,
-                "created_at": m.created_at
+                "created_at": m.created_at,
             })
 
         return Response(data)
@@ -70,12 +70,17 @@ def get_my_materials(request, username):
 def view_pdf(request, material_id):
     try:
         material = AuthorStudyMaterial.objects.get(id=material_id)
-        response = FileResponse(material.file.open('rb'), content_type='application/pdf')
-        response['Content-Disposition'] = f'inline; filename="{material.file.name}"'
+        response = FileResponse(
+            material.file.open("rb"), content_type="application/pdf"
+        )
+        response["Content-Disposition"] = (
+            f'inline; filename="{material.file.name}"'
+        )
         return response
 
     except AuthorStudyMaterial.DoesNotExist:
-        return Response({"error": "Not found"}, status=404)
+        from django.http import JsonResponse
+        return JsonResponse({"error": "Not found"}, status=404)
 
 
 @api_view(['DELETE'])
@@ -129,7 +134,7 @@ def update_material(request, material_id):
         return Response({"error": str(e)}, status=400)
 
 
-# ================= QUIZ SYSTEM (FIXED + UPGRADED) =================
+# ================= QUIZ SYSTEM (UNCHANGED) =================
 
 @api_view(['POST'])
 def create_quiz(request):
@@ -155,8 +160,7 @@ def create_quiz(request):
             difficulty=request.data.get("difficulty", "easy"),
             time_limit=request.data.get("time_limit", 10),
             linked_material=linked_material,
-            link_type=request.data.get("link_type", "material"),
-            linked_id=request.data.get("linked_id")
+            link_type="material",
         )
 
         return Response({"message": "Quiz created successfully", "quiz_id": quiz.id})
@@ -185,20 +189,25 @@ def create_quiz_with_questions(request):
         if not questions:
             return Response({"error": "At least 1 question required"}, status=400)
 
-        # Validate each question
         for i, q in enumerate(questions):
             if not q.get("question", "").strip():
-                return Response({"error": f"Q{i+1}: Question text missing"}, status=400)
+                return Response(
+                    {"error": f"Q{i+1}: Question text missing"}, status=400
+                )
             if not q.get("option_a", "").strip() or not q.get("option_b", "").strip():
-                return Response({"error": f"Q{i+1}: Options A & B required"}, status=400)
+                return Response(
+                    {"error": f"Q{i+1}: Options A & B required"}, status=400
+                )
             if not q.get("correct_answer", "").strip():
-                return Response({"error": f"Q{i+1}: Correct answer missing"}, status=400)
+                return Response(
+                    {"error": f"Q{i+1}: Correct answer missing"}, status=400
+                )
 
-        # Duplicate title check (same author)
         if AuthorQuiz.objects.filter(user=user, title__iexact=title).exists():
-            return Response({"error": "Quiz with this title already exists"}, status=400)
+            return Response(
+                {"error": "Quiz with this title already exists"}, status=400
+            )
 
-        # Linked material
         material_id = request.data.get("material_id")
         linked_material = None
         if material_id:
@@ -207,7 +216,6 @@ def create_quiz_with_questions(request):
             except AuthorStudyMaterial.DoesNotExist:
                 pass
 
-        # Create quiz
         quiz = AuthorQuiz.objects.create(
             user=user,
             title=title,
@@ -215,11 +223,10 @@ def create_quiz_with_questions(request):
             difficulty=request.data.get("difficulty", "easy"),
             time_limit=int(request.data.get("time_limit", 10)),
             linked_material=linked_material,
-            link_type=request.data.get("link_type", "material"),
-            linked_id=request.data.get("linked_id") or None
+            link_type="material",
+            linked_id=None,
         )
 
-        # Create questions
         for q in questions:
             QuizQuestion.objects.create(
                 quiz=quiz,
@@ -230,13 +237,13 @@ def create_quiz_with_questions(request):
                 option_d=q.get("option_d", "").strip(),
                 correct_answer=q.get("correct_answer", "A").strip().upper(),
                 marks=int(q.get("marks", 1)),
-                explanation=q.get("explanation", "").strip()
+                explanation=q.get("explanation", "").strip(),
             )
 
         return Response({
             "message": "Quiz created successfully!",
             "quiz_id": quiz.id,
-            "total_questions": len(questions)
+            "total_questions": len(questions),
         })
 
     except User.DoesNotExist:
@@ -261,7 +268,7 @@ def add_question(request):
             option_d=request.data.get("option_d"),
             correct_answer=request.data.get("correct_answer"),
             marks=request.data.get("marks", 1),
-            explanation=request.data.get("explanation", "")
+            explanation=request.data.get("explanation", ""),
         )
 
         return Response({"message": "Question added successfully"})
@@ -274,7 +281,7 @@ def add_question(request):
 def get_my_quizzes(request, username):
     try:
         user = User.objects.get(username=username)
-        quizzes = AuthorQuiz.objects.filter(user=user).order_by('-created_at')
+        quizzes = AuthorQuiz.objects.filter(user=user).order_by("-created_at")
 
         data = []
         for q in quizzes:
@@ -287,8 +294,7 @@ def get_my_quizzes(request, username):
                 "created_at": q.created_at,
                 "linked_material": q.linked_material.id if q.linked_material else None,
                 "link_type": q.link_type,
-                "linked_id": q.linked_id,
-                "total_questions": q.questions.count()
+                "total_questions": q.questions.count(),
             })
 
         return Response(data)
@@ -325,10 +331,114 @@ def get_quiz_questions(request, quiz_id):
                 "option_d": q.option_d,
                 "correct_answer": q.correct_answer,
                 "marks": q.marks,
-                "explanation": q.explanation
+                "explanation": q.explanation,
             })
 
         return Response(data)
 
     except:
         return Response([])
+
+
+# ================= 🆕 PUBLIC APIs (for student search) =================
+
+@api_view(['GET'])
+def get_all_author_materials(request):
+    """
+    Public API — returns all author materials with author info + follower count.
+    Used in HomeStudyMaterial & StudentDashboard search bars.
+    Supports ?search=keyword and ?author=username query params.
+    """
+    try:
+        materials = AuthorStudyMaterial.objects.select_related("user").order_by("-created_at")
+
+        search = request.GET.get("search", "").strip()
+        author_filter = request.GET.get("author", "").strip()
+
+        if search:
+            materials = materials.filter(title__icontains=search) | \
+                        materials.filter(subject__icontains=search)
+
+        if author_filter:
+            materials = materials.filter(user__username=author_filter)
+
+        data = []
+        for m in materials:
+            profile = AuthorProfile.objects.filter(user=m.user).first()
+            follower_count = Follow.objects.filter(author=m.user).count()
+
+            image_url = None
+            if profile and profile.profile_image:
+                image_url = request.build_absolute_uri(profile.profile_image.url)
+
+            file_url = (
+                request.build_absolute_uri(f"/api/author/view-pdf/{m.id}/")
+                if m.file
+                else None
+            )
+
+            data.append({
+                "id": m.id,
+                "title": m.title,
+                "subject": m.subject,
+                "course": m.course,
+                "semester": m.semester,
+                "description": m.description,
+                "content": m.content,
+                "file": file_url,
+                "created_at": m.created_at,
+                "author_username": m.user.username,
+                "author_name": profile.name if profile and profile.name else m.user.username,
+                "author_image": image_url,
+                "follower_count": follower_count,
+            })
+
+        return Response(data)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+@api_view(['GET'])
+def get_author_material_detail(request, material_id):
+    """
+    Public API — single author material detail with full author info.
+    """
+    try:
+        m = AuthorStudyMaterial.objects.select_related("user").get(id=material_id)
+        profile = AuthorProfile.objects.filter(user=m.user).first()
+        follower_count = Follow.objects.filter(author=m.user).count()
+
+        image_url = None
+        if profile and profile.profile_image:
+            image_url = request.build_absolute_uri(profile.profile_image.url)
+
+        file_url = (
+            request.build_absolute_uri(f"/api/author/view-pdf/{m.id}/")
+            if m.file
+            else None
+        )
+
+        data = {
+            "id": m.id,
+            "title": m.title,
+            "subject": m.subject,
+            "course": m.course,
+            "semester": m.semester,
+            "description": m.description,
+            "content": m.content,
+            "file": file_url,
+            "created_at": m.created_at,
+            "author_username": m.user.username,
+            "author_name": profile.name if profile and profile.name else m.user.username,
+            "author_image": image_url,
+            "follower_count": follower_count,
+        }
+
+        return Response(data)
+
+    except AuthorStudyMaterial.DoesNotExist:
+        return Response({"error": "Material not found"}, status=404)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)

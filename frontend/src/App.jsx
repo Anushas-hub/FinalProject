@@ -12,31 +12,35 @@ import AuthorDashboard from "./pages/AuthorDashboard";
 import PreviousYearQuestions from "./pages/PreviousYearQuestions";
 import TopicContent from "./pages/TopicContent";
 import CertificationQuiz from "./pages/CertificationQuiz";
-
 import ExploreCertification from "./pages/ExploreCertification";
 import CertificationResults from "./pages/CertificationResults";
 import CertificationCourse from "./pages/CertificationCourse";
 import QuizPage from "./pages/QuizPage";
 import CertificationSuccess from "./pages/CertificationSuccess";
-import CertificationPreview from "./pages/CertificatePreview"; // 🔥 filename check karo
+import CertificationPreview from "./pages/CertificatePreview";
+import AuthorMaterialDetail from "./pages/AuthorMaterialDetail";
+import AuthorMaterialsPage from "./pages/AuthorMaterialPage"; // 🆕
 
 function App() {
   return (
     <Routes>
 
       {/* CERTIFICATION FLOW */}
-      <Route path="/certification-quiz/:id" element={<CertificationQuiz />} /> {/* 🔥 ADD THIS */}
+      <Route path="/certification-quiz/:id" element={<CertificationQuiz />} />
       <Route path="/explore-certification" element={<ExploreCertification />} />
-      <Route path="/certifications" element={<CertificationResults />} /> {/* 🔥 ADD THIS */}
+      <Route path="/certifications" element={<CertificationResults />} />
       <Route path="/certification/:id" element={<CertificationCourse />} />
       <Route path="/quiz/:id" element={<QuizPage />} />
       <Route path="/certification/:id/success" element={<CertificationSuccess />} />
       <Route path="/certificate/:id" element={<CertificationPreview />} />
 
-
       {/* STUDY MATERIAL */}
       <Route path="/study-material/:id" element={<TopicContent />} />
       <Route path="/study-material" element={<HomeStudyMaterial />} />
+
+      {/* AUTHOR MATERIAL */}
+      <Route path="/author-material/:materialId" element={<AuthorMaterialDetail />} />
+      <Route path="/author-materials" element={<AuthorMaterialsPage />} /> {/* 🆕 filtered by author */}
 
       {/* OTHER ROUTES */}
       <Route path="/previous-year-questions" element={<PreviousYearQuestions />} />

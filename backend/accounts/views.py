@@ -10,6 +10,7 @@ from .models import Subject, Module, Quiz, Question, ViewedTopic, QuizAttempt
 from .models import AuthorProfile
 from django.core.files.storage import default_storage
 from .models import StudyMaterial
+from .models import Follow
 
 User = get_user_model()
 
@@ -283,7 +284,6 @@ def student_analytics(request, username):
         viewed_count = ViewedTopic.objects.filter(user=user).count()
         quiz_count = QuizAttempt.objects.filter(user=user).count()
 
-        # certification placeholder (if another app handles it)
         certification_count = 0
 
         data = {
@@ -300,7 +300,8 @@ def student_analytics(request, username):
             "quizzes_attempted": 0,
             "certifications": 0
         })
-        
+
+
 @csrf_exempt
 def submit_feedback(request):
     if request.method == "POST":
@@ -320,6 +321,7 @@ def submit_feedback(request):
 
     return JsonResponse({"error": "Invalid request"})
 
+
 # ---------------- GET AUTHOR PROFILE ----------------
 
 @api_view(['GET'])
@@ -335,13 +337,16 @@ def get_author_profile(request, username):
         if profile.profile_image:
             image_url = request.build_absolute_uri(profile.profile_image.url)
 
+        follower_count = Follow.objects.filter(author=user).count()
+
         data = {
             "name": profile.name,
             "bio": profile.bio,
             "education": profile.education,
             "experience": profile.experience,
             "skills": profile.skills,
-            "profile_image": image_url
+            "profile_image": image_url,
+            "follower_count": follower_count,
         }
 
         return Response(data)
@@ -378,7 +383,8 @@ def save_author_profile(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
+
 @api_view(['POST'])
 def delete_author_image(request):
 
@@ -397,7 +403,8 @@ def delete_author_image(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
+
 # ---------------- UPLOAD STUDY MATERIAL ----------------
 
 @api_view(['POST'])
@@ -425,6 +432,132 @@ def upload_study_material(request):
         )
 
         return Response({"message": "Material uploaded successfully"})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+# ==================== 🆕 FOLLOW SYSTEM ====================
+
+@api_view(['POST'])
+def follow_author(request):
+    """Student follows an author"""
+    try:
+        follower_username = request.data.get("follower")
+        author_username = request.data.get("author")
+
+        follower = User.objects.get(username=follower_username)
+        author = User.objects.get(username=author_username)
+
+        if follower == author:
+            return Response({"error": "Cannot follow yourself"}, status=400)
+
+        if author.role != "author":
+            return Response({"error": "Can only follow authors"}, status=400)
+
+        follow, created = Follow.objects.get_or_create(
+            follower=follower,
+            author=author
+        )
+
+        if created:
+            return Response({"message": "Followed successfully", "following": True})
+        else:
+            return Response({"message": "Already following", "following": True})
+
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+@api_view(['POST'])
+def unfollow_author(request):
+    """Student unfollows an author"""
+    try:
+        follower_username = request.data.get("follower")
+        author_username = request.data.get("author")
+
+        follower = User.objects.get(username=follower_username)
+        author = User.objects.get(username=author_username)
+
+        Follow.objects.filter(follower=follower, author=author).delete()
+
+        return Response({"message": "Unfollowed successfully", "following": False})
+
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+@api_view(['GET'])
+def check_follow_status(request, follower, author):
+    """Check if student is following an author"""
+    try:
+        follower_user = User.objects.get(username=follower)
+        author_user = User.objects.get(username=author)
+
+        is_following = Follow.objects.filter(
+            follower=follower_user,
+            author=author_user
+        ).exists()
+
+        return Response({"following": is_following})
+
+    except User.DoesNotExist:
+        return Response({"following": False})
+
+
+@api_view(['GET'])
+def get_author_followers(request, username):
+    """Get all followers of an author"""
+    try:
+        author = User.objects.get(username=username)
+
+        followers = Follow.objects.filter(author=author).select_related("follower")
+
+        data = []
+        for f in followers:
+            data.append({
+                "username": f.follower.username,
+                "followed_at": f.followed_at,
+            })
+
+        return Response({
+            "author": username,
+            "follower_count": len(data),
+            "followers": data
+        })
+
+    except User.DoesNotExist:
+        return Response({"error": "Author not found"}, status=404)
+
+
+@api_view(['GET'])
+def get_all_authors(request):
+    """Get all authors with follower count - for student search/browse"""
+    try:
+        authors = User.objects.filter(role="author")
+        data = []
+
+        for author in authors:
+            profile = AuthorProfile.objects.filter(user=author).first()
+            follower_count = Follow.objects.filter(author=author).count()
+
+            image_url = None
+            if profile and profile.profile_image:
+                image_url = request.build_absolute_uri(profile.profile_image.url)
+
+            data.append({
+                "username": author.username,
+                "name": profile.name if profile else author.username,
+                "bio": profile.bio if profile else "",
+                "profile_image": image_url,
+                "follower_count": follower_count,
+            })
+
+        return Response(data)
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)
