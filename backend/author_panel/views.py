@@ -70,10 +70,8 @@ def get_my_materials(request, username):
 def view_pdf(request, material_id):
     try:
         material = AuthorStudyMaterial.objects.get(id=material_id)
-
         response = FileResponse(material.file.open('rb'), content_type='application/pdf')
         response['Content-Disposition'] = f'inline; filename="{material.file.name}"'
-
         return response
 
     except AuthorStudyMaterial.DoesNotExist:
@@ -89,7 +87,6 @@ def delete_material(request, material_id):
             material.file.delete()
 
         material.delete()
-
         return Response({"message": "Deleted successfully"})
 
     except AuthorStudyMaterial.DoesNotExist:
@@ -117,14 +114,12 @@ def update_material(request, material_id):
             if material.file:
                 material.file.delete()
                 material.file = None
-
         elif request.FILES.get("file"):
             if material.file:
                 material.file.delete()
             material.file = request.FILES.get("file")
 
         material.save()
-
         return Response({"message": "Material updated successfully"})
 
     except AuthorStudyMaterial.DoesNotExist:
@@ -134,9 +129,8 @@ def update_material(request, material_id):
         return Response({"error": str(e)}, status=400)
 
 
-# ================= QUIZ SYSTEM (NEW) =================
+# ================= QUIZ SYSTEM (FIXED + UPGRADED) =================
 
-# -------- CREATE QUIZ --------
 @api_view(['POST'])
 def create_quiz(request):
     try:
@@ -147,30 +141,111 @@ def create_quiz(request):
             return Response({"error": "Only authors can create quiz"}, status=403)
 
         material_id = request.data.get("material_id")
-
         linked_material = None
         if material_id:
-            linked_material = AuthorStudyMaterial.objects.get(id=material_id)
+            try:
+                linked_material = AuthorStudyMaterial.objects.get(id=material_id)
+            except AuthorStudyMaterial.DoesNotExist:
+                pass
 
         quiz = AuthorQuiz.objects.create(
             user=user,
             title=request.data.get("title"),
-            description=request.data.get("description"),
-            difficulty=request.data.get("difficulty"),
-            time_limit=request.data.get("time_limit"),
-            linked_material=linked_material
+            description=request.data.get("description", ""),
+            difficulty=request.data.get("difficulty", "easy"),
+            time_limit=request.data.get("time_limit", 10),
+            linked_material=linked_material,
+            link_type=request.data.get("link_type", "material"),
+            linked_id=request.data.get("linked_id")
         )
 
-        return Response({
-            "message": "Quiz created successfully",
-            "quiz_id": quiz.id
-        })
+        return Response({"message": "Quiz created successfully", "quiz_id": quiz.id})
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
 
-# -------- ADD QUESTIONS --------
+@api_view(['POST'])
+def create_quiz_with_questions(request):
+    try:
+        username = request.data.get("username")
+        if not username:
+            return Response({"error": "Username required"}, status=400)
+
+        user = User.objects.get(username=username)
+
+        if user.role != "author":
+            return Response({"error": "Only authors allowed"}, status=403)
+
+        title = request.data.get("title", "").strip()
+        if not title:
+            return Response({"error": "Quiz title is required"}, status=400)
+
+        questions = request.data.get("questions", [])
+        if not questions:
+            return Response({"error": "At least 1 question required"}, status=400)
+
+        # Validate each question
+        for i, q in enumerate(questions):
+            if not q.get("question", "").strip():
+                return Response({"error": f"Q{i+1}: Question text missing"}, status=400)
+            if not q.get("option_a", "").strip() or not q.get("option_b", "").strip():
+                return Response({"error": f"Q{i+1}: Options A & B required"}, status=400)
+            if not q.get("correct_answer", "").strip():
+                return Response({"error": f"Q{i+1}: Correct answer missing"}, status=400)
+
+        # Duplicate title check (same author)
+        if AuthorQuiz.objects.filter(user=user, title__iexact=title).exists():
+            return Response({"error": "Quiz with this title already exists"}, status=400)
+
+        # Linked material
+        material_id = request.data.get("material_id")
+        linked_material = None
+        if material_id:
+            try:
+                linked_material = AuthorStudyMaterial.objects.get(id=material_id)
+            except AuthorStudyMaterial.DoesNotExist:
+                pass
+
+        # Create quiz
+        quiz = AuthorQuiz.objects.create(
+            user=user,
+            title=title,
+            description=request.data.get("description", ""),
+            difficulty=request.data.get("difficulty", "easy"),
+            time_limit=int(request.data.get("time_limit", 10)),
+            linked_material=linked_material,
+            link_type=request.data.get("link_type", "material"),
+            linked_id=request.data.get("linked_id") or None
+        )
+
+        # Create questions
+        for q in questions:
+            QuizQuestion.objects.create(
+                quiz=quiz,
+                question=q.get("question", "").strip(),
+                option_a=q.get("option_a", "").strip(),
+                option_b=q.get("option_b", "").strip(),
+                option_c=q.get("option_c", "").strip(),
+                option_d=q.get("option_d", "").strip(),
+                correct_answer=q.get("correct_answer", "A").strip().upper(),
+                marks=int(q.get("marks", 1)),
+                explanation=q.get("explanation", "").strip()
+            )
+
+        return Response({
+            "message": "Quiz created successfully!",
+            "quiz_id": quiz.id,
+            "total_questions": len(questions)
+        })
+
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
 @api_view(['POST'])
 def add_question(request):
     try:
@@ -185,7 +260,7 @@ def add_question(request):
             option_c=request.data.get("option_c"),
             option_d=request.data.get("option_d"),
             correct_answer=request.data.get("correct_answer"),
-            marks=request.data.get("marks"),
+            marks=request.data.get("marks", 1),
             explanation=request.data.get("explanation", "")
         )
 
@@ -195,23 +270,25 @@ def add_question(request):
         return Response({"error": str(e)}, status=400)
 
 
-# -------- GET MY QUIZZES --------
 @api_view(['GET'])
 def get_my_quizzes(request, username):
     try:
         user = User.objects.get(username=username)
-        quizzes = AuthorQuiz.objects.filter(user=user)
+        quizzes = AuthorQuiz.objects.filter(user=user).order_by('-created_at')
 
         data = []
-
         for q in quizzes:
             data.append({
                 "id": q.id,
                 "title": q.title,
+                "description": q.description,
                 "difficulty": q.difficulty,
                 "time_limit": q.time_limit,
                 "created_at": q.created_at,
-                "linked_material": q.linked_material.id if q.linked_material else None
+                "linked_material": q.linked_material.id if q.linked_material else None,
+                "link_type": q.link_type,
+                "linked_id": q.linked_id,
+                "total_questions": q.questions.count()
             })
 
         return Response(data)
@@ -220,20 +297,17 @@ def get_my_quizzes(request, username):
         return Response([])
 
 
-# -------- DELETE QUIZ --------
 @api_view(['DELETE'])
 def delete_quiz(request, quiz_id):
     try:
         quiz = AuthorQuiz.objects.get(id=quiz_id)
         quiz.delete()
-
         return Response({"message": "Quiz deleted successfully"})
 
     except AuthorQuiz.DoesNotExist:
         return Response({"error": "Quiz not found"}, status=404)
 
 
-# -------- GET QUESTIONS OF QUIZ --------
 @api_view(['GET'])
 def get_quiz_questions(request, quiz_id):
     try:
@@ -241,7 +315,6 @@ def get_quiz_questions(request, quiz_id):
         questions = quiz.questions.all()
 
         data = []
-
         for q in questions:
             data.append({
                 "id": q.id,

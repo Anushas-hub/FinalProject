@@ -38,7 +38,7 @@ class AuthorStudyMaterial(models.Model):
         return self.title
 
 
-# ================= QUIZ SYSTEM (NEW - SAFE ADDITION) =================
+# ================= QUIZ SYSTEM (UPGRADED - SAFE ADDITION) =================
 
 class AuthorQuiz(models.Model):
 
@@ -46,6 +46,12 @@ class AuthorQuiz(models.Model):
         ("easy", "Easy"),
         ("medium", "Medium"),
         ("hard", "Hard"),
+    )
+
+    LINK_TYPE_CHOICES = (
+        ("material", "Study Material"),
+        ("course", "Course"),
+        ("pyq", "PYQ"),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -56,7 +62,7 @@ class AuthorQuiz(models.Model):
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default="easy")
     time_limit = models.IntegerField(help_text="Time in minutes", default=10)
 
-    # 🔗 OPTIONAL LINK WITH STUDY MATERIAL (NO CLASH)
+    # 🔗 OLD SAFE LINK (DO NOT REMOVE)
     linked_material = models.ForeignKey(
         AuthorStudyMaterial,
         on_delete=models.SET_NULL,
@@ -64,6 +70,15 @@ class AuthorQuiz(models.Model):
         blank=True,
         related_name="quizzes"
     )
+
+    # 🔗 NEW FLEXIBLE LINK SYSTEM
+    link_type = models.CharField(
+        max_length=20,
+        choices=LINK_TYPE_CHOICES,
+        default="material"
+    )
+
+    linked_id = models.IntegerField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

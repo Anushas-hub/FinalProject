@@ -6,8 +6,9 @@ from .views import (
     update_material,
     view_pdf,
 
-    # ✅ QUIZ IMPORTS (NEW)
+    # QUIZ IMPORTS
     create_quiz,
+    create_quiz_with_questions,   # ✅ NEW
     add_question,
     get_my_quizzes,
     delete_quiz,
@@ -24,20 +25,17 @@ urlpatterns = [
 
     path('view-pdf/<int:material_id>/', view_pdf),
 
-    # ================= QUIZ ROUTES (NEW) =================
+    # ================= QUIZ ROUTES =================
 
-    # 🔥 CREATE QUIZ
+    # OLD (SAFE)
     path('create-quiz/', create_quiz),
-
-    # 🔥 ADD QUESTION
     path('add-question/', add_question),
 
-    # 🔥 GET MY QUIZZES
+    # ✅ NEW POWERFUL ROUTE
+    path('create-quiz-with-questions/', create_quiz_with_questions),
+
+    # OTHER
     path('my-quizzes/<str:username>/', get_my_quizzes),
-
-    # 🔥 DELETE QUIZ
     path('delete-quiz/<int:quiz_id>/', delete_quiz),
-
-    # 🔥 GET QUESTIONS OF QUIZ
     path('quiz-questions/<int:quiz_id>/', get_quiz_questions),
 ]

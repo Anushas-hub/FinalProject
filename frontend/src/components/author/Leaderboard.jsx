@@ -1,5 +1,34 @@
 import { useEffect, useState } from "react";
+import {
+  Bar,
+  Pie,
+  Line
+} from "react-chartjs-2";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
 import "./Leaderboard.css";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend
+);
 
 export default function Leaderboard() {
   const [analytics, setAnalytics] = useState(null);
@@ -9,12 +38,7 @@ export default function Leaderboard() {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await fetch("/api/author/analytics/", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access")}`, // if using JWT
-          },
-        });
+        const response = await fetch("/api/author/analytics/");
 
         if (!response.ok) {
           throw new Error("Failed to fetch analytics");
@@ -22,31 +46,7 @@ export default function Leaderboard() {
 
         const data = await response.json();
 
-        // 🔥 Backend raw counts expected:
-        // {
-        //   notes_views: 120,
-        //   quiz_attempts: 80,
-        //   questions_received: 35,
-        //   previous_growth: 15
-        // }
-
-        const total =
-          data.notes_views +
-          data.quiz_attempts +
-          data.questions_received;
-
-        const calculatePercent = (value) =>
-          total > 0 ? Math.round((value / total) * 100) : 0;
-
-        setAnalytics({
-          notesViews: data.notes_views,
-          quizAttempts: data.quiz_attempts,
-          questionsReceived: data.questions_received,
-          notesPercent: calculatePercent(data.notes_views),
-          quizPercent: calculatePercent(data.quiz_attempts),
-          questionsPercent: calculatePercent(data.questions_received),
-          growth: data.previous_growth,
-        });
+        setAnalytics(data);
       } catch (err) {
         setError("Unable to load analytics");
       } finally {
@@ -60,61 +60,78 @@ export default function Leaderboard() {
   if (loading) return <p className="analytics-container">Loading...</p>;
   if (error) return <p className="analytics-container">{error}</p>;
 
+  // 📊 BAR CHART DATA
+  const barData = {
+    labels: ["Notes Viewed", "Quiz Attempts", "Questions Asked"],
+    datasets: [
+      {
+        label: "Activity",
+        data: [
+          analytics.notes_views,
+          analytics.quiz_attempts,
+          analytics.questions_received,
+        ],
+      },
+    ],
+  };
+
+  // 🥧 PIE CHART
+  const pieData = {
+    labels: ["Notes", "Quiz", "Questions"],
+    datasets: [
+      {
+        data: [
+          analytics.notes_views,
+          analytics.quiz_attempts,
+          analytics.questions_received,
+        ],
+      },
+    ],
+  };
+
+  // 📈 LINE CHART (growth simulation / backend future ready)
+  const lineData = {
+    labels: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5"],
+    datasets: [
+      {
+        label: "Growth %",
+        data: [
+          analytics.previous_growth - 10,
+          analytics.previous_growth - 5,
+          analytics.previous_growth,
+          analytics.previous_growth + 5,
+          analytics.previous_growth + 10,
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="analytics-container">
-      <h2>📊 Author Analytics (Last 5 Days)</h2>
+      <h2>📊 Author Analytics Dashboard</h2>
 
-      <div className="analytics-cards">
-        <CircleCard
-          title="Notes Viewed"
-          percentage={analytics.notesPercent}
-          count={analytics.notesViews}
-        />
+      <div style={{ marginBottom: "40px" }}>
+        <h3>📊 Activity Overview</h3>
+        <Bar data={barData} />
+      </div>
 
-        <CircleCard
-          title="Quiz Attempts"
-          percentage={analytics.quizPercent}
-          count={analytics.quizAttempts}
-        />
+      <div style={{ marginBottom: "40px" }}>
+        <h3>🥧 Distribution</h3>
+        <Pie data={pieData} />
+      </div>
 
-        <CircleCard
-          title="Questions Asked"
-          percentage={analytics.questionsPercent}
-          count={analytics.questionsReceived}
-        />
+      <div style={{ marginBottom: "40px" }}>
+        <h3>📈 Growth Trend</h3>
+        <Line data={lineData} />
       </div>
 
       <div className="growth-section">
         <h3>🚀 Overall Growth</h3>
         <p className="growth-number">
-          {analytics.growth > 0 ? "+" : ""}
-          {analytics.growth}% Improvement
+          {analytics.previous_growth > 0 ? "+" : ""}
+          {analytics.previous_growth}% Improvement
         </p>
       </div>
-    </div>
-  );
-}
-
-function CircleCard({ title, percentage, count }) {
-  return (
-    <div className="circle-card">
-      <div
-        className="circle"
-        style={{
-          background: `conic-gradient(
-            #4CAF50 ${percentage}%,
-            #e6e6e6 ${percentage}% 100%
-          )`,
-        }}
-      >
-        <div className="inner-circle">
-          <div>
-            <span>{percentage}%</span>
-            <p className="circle-count">{count}</p>
-          </div>
-        </div>
-      </div>
-      <p>{title}</p>
     </div>
   );
 }
