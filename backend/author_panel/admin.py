@@ -3,9 +3,10 @@ from .models import (
     AuthorStudyMaterial,
     AuthorQuiz,
     QuizQuestion,
-    MaterialQuestion,   # 🆕
-    MaterialAnswer,     # 🆕
-    PeerComment,        # 🆕
+    MaterialQuestion,
+    MaterialAnswer,
+    PeerComment,
+    AdminNotification,  # 🆕
 )
 
 
@@ -32,12 +33,9 @@ class QuizQuestionAdmin(admin.ModelAdmin):
     list_filter = ('correct_answer',)
 
 
-# ================= 🆕 Q&A SYSTEM =================
+# ================= Q&A SYSTEM =================
 
 class MaterialAnswerInline(admin.TabularInline):
-    """
-    Show answers directly inside the question detail page in admin.
-    """
     model = MaterialAnswer
     extra = 0
     readonly_fields = ('answered_by', 'answer', 'created_at')
@@ -60,8 +58,6 @@ class MaterialQuestionAdmin(admin.ModelAdmin):
     readonly_fields = ('asked_by', 'material', 'question', 'created_at')
     list_editable = ('is_read',)
     ordering = ('-created_at',)
-
-    # show answers inline inside question detail
     inlines = [MaterialAnswerInline]
 
     def short_question(self, obj):
@@ -91,7 +87,7 @@ class MaterialAnswerAdmin(admin.ModelAdmin):
     short_answer.short_description = "Answer"
 
 
-# ================= 🆕 PEER NOTES SYSTEM =================
+# ================= PEER NOTES SYSTEM =================
 
 @admin.register(PeerComment)
 class PeerCommentAdmin(admin.ModelAdmin):
@@ -112,3 +108,46 @@ class PeerCommentAdmin(admin.ModelAdmin):
     def short_comment(self, obj):
         return obj.comment[:60] + "..." if len(obj.comment) > 60 else obj.comment
     short_comment.short_description = "Comment"
+
+
+# ================= 🆕 ADMIN NOTIFICATION SYSTEM =================
+
+@admin.register(AdminNotification)
+class AdminNotificationAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'notification_type',
+        'title',
+        'recipient_display',
+        'is_read',
+        'created_at',
+    )
+    list_filter = ('notification_type', 'is_read', 'created_at')
+    search_fields = ('title', 'message', 'recipient__username')
+    ordering = ('-created_at',)
+
+    # Admin can write title, message, type, recipient
+    fields = ('recipient', 'notification_type', 'title', 'message', 'is_read')
+
+    def recipient_display(self, obj):
+        return obj.recipient.username if obj.recipient else "📢 ALL AUTHORS"
+    recipient_display.short_description = "Recipient"
+
+    def save_model(self, request, obj, form, change):
+        """
+        If recipient is blank → create one notification per author.
+        If recipient is set → save normally for that specific author.
+        """
+        from accounts.models import User
+        if not obj.recipient:
+            # broadcast — create one entry per author
+            authors = User.objects.filter(role="author")
+            for author in authors:
+                AdminNotification.objects.create(
+                    recipient=author,
+                    title=obj.title,
+                    message=obj.message,
+                    notification_type=obj.notification_type,
+                )
+        else:
+            super().save_model(request, obj, form, change)

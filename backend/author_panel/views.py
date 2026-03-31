@@ -1,10 +1,14 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from django.http import FileResponse
+from django.utils import timezone
+from datetime import timedelta
+
 from .models import AuthorStudyMaterial, AuthorQuiz, QuizQuestion
 from .models import MaterialQuestion, MaterialAnswer, PeerComment
-from django.http import FileResponse
-from accounts.models import Follow, AuthorProfile
+from .models import AdminNotification  # 🆕
+from accounts.models import Follow, AuthorProfile, QuizAttempt
 
 User = get_user_model()
 
@@ -566,7 +570,9 @@ def mark_questions_read(request):
         username = request.data.get("username")
         user = User.objects.get(username=username)
         my_materials = AuthorStudyMaterial.objects.filter(user=user)
-        MaterialQuestion.objects.filter(material__in=my_materials, is_read=False).update(is_read=True)
+        MaterialQuestion.objects.filter(
+            material__in=my_materials, is_read=False
+        ).update(is_read=True)
         return Response({"message": "All marked as read"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
@@ -677,23 +683,23 @@ def mark_peer_comments_read(request):
         username = request.data.get("username")
         user = User.objects.get(username=username)
         my_materials = AuthorStudyMaterial.objects.filter(user=user)
-        PeerComment.objects.filter(material__in=my_materials, is_read=False).update(is_read=True)
+        PeerComment.objects.filter(
+            material__in=my_materials, is_read=False
+        ).update(is_read=True)
         return Response({"message": "All peer notes marked as read"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
 
-# ================= 🆕 QUIZ FOR MATERIAL (PUBLIC) =================
+# ================= QUIZ FOR MATERIAL (PUBLIC) =================
 
 @api_view(['GET'])
 def get_quizzes_for_material(request, material_id):
-    """
-    Public API — returns all quizzes linked to a specific author material.
-    Used in AuthorMaterialDetail page to show "Attempt Quiz" section.
-    """
     try:
         material = AuthorStudyMaterial.objects.get(id=material_id)
-        quizzes = AuthorQuiz.objects.filter(linked_material=material).order_by("-created_at")
+        quizzes = AuthorQuiz.objects.filter(
+            linked_material=material
+        ).order_by("-created_at")
 
         data = []
         for q in quizzes:
@@ -719,10 +725,6 @@ def get_quizzes_for_material(request, material_id):
 
 @api_view(['GET'])
 def get_author_quiz_detail(request, quiz_id):
-    """
-    Public API — returns quiz with all questions for attempt page.
-    Does NOT send correct_answer to frontend (security).
-    """
     try:
         quiz = AuthorQuiz.objects.get(id=quiz_id)
         questions = quiz.questions.all().order_by("id")
@@ -747,7 +749,6 @@ def get_author_quiz_detail(request, quiz_id):
                     "option_c": q.option_c if q.option_c else None,
                     "option_d": q.option_d if q.option_d else None,
                     "marks": q.marks,
-                    # correct_answer NOT sent — checked after submit
                 }
                 for q in questions
             ],
@@ -763,13 +764,9 @@ def get_author_quiz_detail(request, quiz_id):
 
 @api_view(['POST'])
 def submit_author_quiz(request):
-    """
-    Student submits quiz answers.
-    Backend checks correct answers and returns score + explanation.
-    """
     try:
         quiz_id = request.data.get("quiz_id")
-        answers = request.data.get("answers", {})  # { question_id: "A" }
+        answers = request.data.get("answers", {})
 
         quiz = AuthorQuiz.objects.get(id=quiz_id)
         questions = quiz.questions.all()
@@ -815,5 +812,146 @@ def submit_author_quiz(request):
 
     except AuthorQuiz.DoesNotExist:
         return Response({"error": "Quiz not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+# ================= AUTHOR LEADERBOARD ANALYTICS =================
+
+@api_view(['GET'])
+def author_leaderboard(request, username):
+    try:
+        user = User.objects.get(username=username)
+
+        if user.role != "author":
+            return Response({"error": "Only authors allowed"}, status=403)
+
+        materials = AuthorStudyMaterial.objects.filter(user=user)
+        materials_count = materials.count()
+        quizzes_count = AuthorQuiz.objects.filter(user=user).count()
+        questions_received = MaterialQuestion.objects.filter(material__in=materials).count()
+        peer_comments = PeerComment.objects.filter(
+            material__in=materials
+        ).exclude(commented_by=user).count()
+        followers_count = Follow.objects.filter(author=user).count()
+        engaged_students = MaterialQuestion.objects.filter(
+            material__in=materials
+        ).values("asked_by").distinct().count()
+
+        now = timezone.now()
+        monthly_labels = []
+        monthly_materials = []
+        monthly_questions = []
+
+        for i in range(5, -1, -1):
+            month_start = (now - timedelta(days=30 * i)).replace(
+                day=1, hour=0, minute=0, second=0, microsecond=0
+            )
+            if i == 0:
+                month_end = now
+            else:
+                month_end = (now - timedelta(days=30 * (i - 1))).replace(
+                    day=1, hour=0, minute=0, second=0, microsecond=0
+                )
+
+            label = month_start.strftime("%b %Y")
+            monthly_labels.append(label)
+
+            mat_count = AuthorStudyMaterial.objects.filter(
+                user=user,
+                created_at__gte=month_start,
+                created_at__lt=month_end,
+            ).count()
+            monthly_materials.append(mat_count)
+
+            q_count = MaterialQuestion.objects.filter(
+                material__in=materials,
+                created_at__gte=month_start,
+                created_at__lt=month_end,
+            ).count()
+            monthly_questions.append(q_count)
+
+        return Response({
+            "materials_uploaded": materials_count,
+            "quizzes_created": quizzes_count,
+            "questions_received": questions_received,
+            "peer_comments": peer_comments,
+            "followers_count": followers_count,
+            "engaged_students": engaged_students,
+            "bar_labels": [
+                "Materials", "Quizzes", "Q&A Received",
+                "Peer Notes", "Followers", "Engaged Students",
+            ],
+            "bar_data": [
+                materials_count, quizzes_count, questions_received,
+                peer_comments, followers_count, engaged_students,
+            ],
+            "line_labels": monthly_labels,
+            "line_materials": monthly_materials,
+            "line_questions": monthly_questions,
+        })
+
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+# ================= 🆕 ADMIN NOTIFICATION SYSTEM =================
+
+@api_view(['GET'])
+def get_admin_notifications(request, username):
+    """
+    Author fetches their admin notifications.
+    Returns unread count + full list.
+    """
+    try:
+        user = User.objects.get(username=username)
+
+        notifications = AdminNotification.objects.filter(
+            recipient=user
+        ).order_by("-created_at")
+
+        unread_count = notifications.filter(is_read=False).count()
+
+        data = []
+        for n in notifications:
+            data.append({
+                "id": n.id,
+                "title": n.title,
+                "message": n.message,
+                "notification_type": n.notification_type,
+                "is_read": n.is_read,
+                "created_at": n.created_at,
+            })
+
+        return Response({
+            "unread_count": unread_count,
+            "notifications": data,
+        })
+
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+@api_view(['POST'])
+def mark_admin_notifications_read(request):
+    """
+    Mark all admin notifications as read for an author.
+    """
+    try:
+        username = request.data.get("username")
+        user = User.objects.get(username=username)
+
+        AdminNotification.objects.filter(
+            recipient=user, is_read=False
+        ).update(is_read=True)
+
+        return Response({"message": "All admin notifications marked as read"})
+
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=400)

@@ -1,4 +1,5 @@
 from django.urls import path
+from .views import author_leaderboard
 from .views import (
     # ── MATERIAL (UNCHANGED) ──
     upload_material, get_my_materials, delete_material,
@@ -53,6 +54,10 @@ urlpatterns = [
     path('qa-notifications/<str:username>/', get_author_qa_notifications),
     path('mark-questions-read/', mark_questions_read),
 
+    #Leaderboard route (UNCHANGED)
+    path('leaderboard/<str:username>/', author_leaderboard),
+    
+    
     # ── PEER NOTES ROUTES (UNCHANGED) ──
     path('peer-comment/', add_peer_comment),
     path('peer-comments/<int:material_id>/', get_peer_comments),

@@ -1,58 +1,136 @@
-.analytics-container {
-  padding: 20px;
+/* ── WRAPPER ── */
+.lb-wrapper {
+  padding: 10px 0;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.analytics-cards {
+/* ── HEADER ── */
+.lb-header {
   display: flex;
-  gap: 40px;
-  margin-top: 30px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
   flex-wrap: wrap;
+  gap: 12px;
 }
 
-.circle-card {
-  text-align: center;
+.lb-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
 }
 
-.circle {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  transition: 0.4s ease;
+.lb-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
 }
 
-.inner-circle {
-  width: 110px;
-  height: 110px;
-  background: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 18px;
-  flex-direction: column;
+.lb-badge {
+  background: #e0e7ff;
+  color: #4f46e5;
+  padding: 8px 18px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.circle-count {
-  font-size: 12px;
-  font-weight: normal;
-  color: #777;
-  margin-top: 4px;
+/* ── STAT CARDS ── */
+.lb-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
-.growth-section {
-  margin-top: 40px;
+.lb-card {
+  background: #ffffff;
+  border-radius: 16px;
   padding: 20px;
-  background: #f4f6ff;
-  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.growth-number {
-  font-size: 22px;
-  font-weight: bold;
-  color: #4CAF50;
+.lb-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.lb-card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lb-card-value {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 2px 0;
+  line-height: 1;
+}
+
+.lb-card-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ── CHART BOXES ── */
+.lb-chart-box {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.lb-chart-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.lb-chart-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0 0 20px 0;
+}
+
+/* ── LOADING / ERROR ── */
+.lb-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 16px;
+  color: #64748b;
+}
+
+.lb-error {
+  color: #dc2626;
+}
+
+.lb-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e0e7ff;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: lb-spin 0.8s linear infinite;
+}
+
+@keyframes lb-spin {
+  to { transform: rotate(360deg); }
 }

@@ -96,13 +96,9 @@ class QuizQuestion(models.Model):
         return self.question[:50]
 
 
-# ================= 🆕 Q&A SYSTEM (Student → Author) =================
+# ================= Q&A SYSTEM (Student → Author) =================
 
 class MaterialQuestion(models.Model):
-    """
-    Student asks a doubt/question on an author's material.
-    Shows in author's notification panel.
-    """
     material = models.ForeignKey(
         AuthorStudyMaterial,
         on_delete=models.CASCADE,
@@ -115,17 +111,13 @@ class MaterialQuestion(models.Model):
     )
     question = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)  # for notification badge
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Q by {self.asked_by} on {self.material.title[:30]}"
 
 
 class MaterialAnswer(models.Model):
-    """
-    Author replies to a student's question.
-    Only the material's author can answer.
-    """
     question = models.ForeignKey(
         MaterialQuestion,
         on_delete=models.CASCADE,
@@ -143,13 +135,9 @@ class MaterialAnswer(models.Model):
         return f"Ans by {self.answered_by} to Q#{self.question.id}"
 
 
-# ================= 🆕 PEER NOTES SYSTEM (Author ↔ Author) =================
+# ================= PEER NOTES SYSTEM (Author ↔ Author) =================
 
 class PeerComment(models.Model):
-    """
-    Authors collaborate by leaving comments/suggestions
-    on each other's study materials.
-    """
     material = models.ForeignKey(
         AuthorStudyMaterial,
         on_delete=models.CASCADE,
@@ -162,7 +150,47 @@ class PeerComment(models.Model):
     )
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)  # for author notification
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"PeerComment by {self.commented_by} on {self.material.title[:30]}"
+
+
+# ================= 🆕 ADMIN NOTIFICATION SYSTEM =================
+
+class AdminNotification(models.Model):
+
+    TYPE_CHOICES = (
+        ("info", "Info"),           # general info / congratulations
+        ("warning", "Warning"),     # content issue warning
+        ("danger", "Danger"),       # account block / delete material
+    )
+
+    # None = broadcast to ALL authors, specific user = only that author
+    recipient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="admin_notifications",
+        null=True,
+        blank=True,
+        help_text="Leave blank to send to ALL authors"
+    )
+
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+
+    notification_type = models.CharField(
+        max_length=10,
+        choices=TYPE_CHOICES,
+        default="info"
+    )
+
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        target = self.recipient.username if self.recipient else "ALL AUTHORS"
+        return f"[{self.notification_type.upper()}] → {target}: {self.title[:40]}"

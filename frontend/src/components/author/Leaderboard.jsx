@@ -1,137 +1,189 @@
 import { useEffect, useState } from "react";
 import {
-  Bar,
-  Pie,
-  Line
-} from "react-chartjs-2";
-
-import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
-  ArcElement,
   PointElement,
   LineElement,
   Tooltip,
   Legend,
 } from "chart.js";
-
+import { Bar, Line } from "react-chartjs-2";
 import "./Leaderboard.css";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
-  ArcElement,
   PointElement,
   LineElement,
   Tooltip,
   Legend
 );
 
+const STAT_CARDS = [
+  { key: "materials_uploaded",  label: "Materials Uploaded",  icon: "📁", color: "#4f46e5" },
+  { key: "quizzes_created",     label: "Quizzes Created",     icon: "📝", color: "#0891b2" },
+  { key: "questions_received",  label: "Q&A Received",        icon: "💬", color: "#7c3aed" },
+  { key: "peer_comments",       label: "Peer Notes",          icon: "📓", color: "#059669" },
+  { key: "followers_count",     label: "Followers",           icon: "👥", color: "#d97706" },
+  { key: "engaged_students",    label: "Engaged Students",    icon: "🎓", color: "#dc2626" },
+];
+
 export default function Leaderboard() {
   const [analytics, setAnalytics] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState("");
+
+  const username = localStorage.getItem("user");
 
   useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        const response = await fetch("/api/author/analytics/");
+    if (!username) return;
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch analytics");
-        }
+    fetch(`http://127.0.0.1:8000/api/author/leaderboard/${username}/`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed");
+        return res.json();
+      })
+      .then((data) => { setAnalytics(data); setLoading(false); })
+      .catch(() => { setError("Unable to load analytics"); setLoading(false); });
+  }, [username]);
 
-        const data = await response.json();
+  if (loading) return (
+    <div className="lb-center">
+      <div className="lb-spinner" />
+      <p>Loading analytics...</p>
+    </div>
+  );
 
-        setAnalytics(data);
-      } catch (err) {
-        setError("Unable to load analytics");
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (error) return (
+    <div className="lb-center lb-error">
+      <p>⚠️ {error}</p>
+    </div>
+  );
 
-    fetchAnalytics();
-  }, []);
-
-  if (loading) return <p className="analytics-container">Loading...</p>;
-  if (error) return <p className="analytics-container">{error}</p>;
-
-  // 📊 BAR CHART DATA
+  // ── BAR CHART ──
   const barData = {
-    labels: ["Notes Viewed", "Quiz Attempts", "Questions Asked"],
-    datasets: [
-      {
-        label: "Activity",
-        data: [
-          analytics.notes_views,
-          analytics.quiz_attempts,
-          analytics.questions_received,
-        ],
-      },
-    ],
+    labels: analytics.bar_labels,
+    datasets: [{
+      label: "Total Count",
+      data: analytics.bar_data,
+      backgroundColor: [
+        "#6366f1","#06b6d4","#8b5cf6",
+        "#10b981","#f59e0b","#ef4444",
+      ],
+      borderRadius: 8,
+      borderSkipped: false,
+    }],
   };
 
-  // 🥧 PIE CHART
-  const pieData = {
-    labels: ["Notes", "Quiz", "Questions"],
-    datasets: [
-      {
-        data: [
-          analytics.notes_views,
-          analytics.quiz_attempts,
-          analytics.questions_received,
-        ],
+  const barOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: {
+        label: (ctx) => ` ${ctx.parsed.y} total`
+      }},
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+        grid: { color: "#f1f5f9" },
       },
-    ],
+      x: { grid: { display: false } },
+    },
   };
 
-  // 📈 LINE CHART (growth simulation / backend future ready)
+  // ── LINE CHART ──
   const lineData = {
-    labels: ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5"],
+    labels: analytics.line_labels,
     datasets: [
       {
-        label: "Growth %",
-        data: [
-          analytics.previous_growth - 10,
-          analytics.previous_growth - 5,
-          analytics.previous_growth,
-          analytics.previous_growth + 5,
-          analytics.previous_growth + 10,
-        ],
+        label: "Materials Uploaded",
+        data: analytics.line_materials,
+        borderColor: "#4f46e5",
+        backgroundColor: "rgba(79,70,229,0.1)",
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: "#4f46e5",
+        pointRadius: 5,
+      },
+      {
+        label: "Q&A Received",
+        data: analytics.line_questions,
+        borderColor: "#10b981",
+        backgroundColor: "rgba(16,185,129,0.1)",
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: "#10b981",
+        pointRadius: 5,
       },
     ],
+  };
+
+  const lineOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+        labels: { usePointStyle: true, padding: 20 },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1 },
+        grid: { color: "#f1f5f9" },
+      },
+      x: { grid: { display: false } },
+    },
   };
 
   return (
-    <div className="analytics-container">
-      <h2>📊 Author Analytics Dashboard</h2>
+    <div className="lb-wrapper">
 
-      <div style={{ marginBottom: "40px" }}>
-        <h3>📊 Activity Overview</h3>
-        <Bar data={barData} />
+      {/* ── HEADER ── */}
+      <div className="lb-header">
+        <div>
+          <h2 className="lb-title">📊 Author Analytics</h2>
+          <p className="lb-subtitle">Your complete activity overview</p>
+        </div>
+        <div className="lb-badge">@{username}</div>
       </div>
 
-      <div style={{ marginBottom: "40px" }}>
-        <h3>🥧 Distribution</h3>
-        <Pie data={pieData} />
+      {/* ── STAT CARDS ── */}
+      <div className="lb-cards">
+        {STAT_CARDS.map((card) => (
+          <div className="lb-card" key={card.key}>
+            <div className="lb-card-icon" style={{ background: card.color + "18" }}>
+              <span style={{ fontSize: "26px" }}>{card.icon}</span>
+            </div>
+            <div className="lb-card-info">
+              <p className="lb-card-value" style={{ color: card.color }}>
+                {analytics[card.key] ?? 0}
+              </p>
+              <p className="lb-card-label">{card.label}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div style={{ marginBottom: "40px" }}>
-        <h3>📈 Growth Trend</h3>
-        <Line data={lineData} />
+      {/* ── BAR CHART ── */}
+      <div className="lb-chart-box">
+        <h3 className="lb-chart-title">📊 Activity Overview</h3>
+        <p className="lb-chart-sub">All-time totals across your content</p>
+        <Bar data={barData} options={barOptions} />
       </div>
 
-      <div className="growth-section">
-        <h3>🚀 Overall Growth</h3>
-        <p className="growth-number">
-          {analytics.previous_growth > 0 ? "+" : ""}
-          {analytics.previous_growth}% Improvement
-        </p>
+      {/* ── LINE CHART ── */}
+      <div className="lb-chart-box">
+        <h3 className="lb-chart-title">📈 Growth Trend (Last 6 Months)</h3>
+        <p className="lb-chart-sub">Monthly uploads vs Q&A activity</p>
+        <Line data={lineData} options={lineOptions} />
       </div>
+
     </div>
   );
 }
