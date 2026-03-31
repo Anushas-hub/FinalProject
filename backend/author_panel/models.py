@@ -44,7 +44,6 @@ class AuthorQuiz(models.Model):
         ("hard", "Hard"),
     )
 
-    # ✅ ONLY material link_type kept — course & pyq removed
     LINK_TYPE_CHOICES = (
         ("material", "Study Material"),
     )
@@ -57,7 +56,6 @@ class AuthorQuiz(models.Model):
     )
     time_limit = models.IntegerField(help_text="Time in minutes", default=10)
 
-    # Linked material FK (safe - unchanged)
     linked_material = models.ForeignKey(
         AuthorStudyMaterial,
         on_delete=models.SET_NULL,
@@ -66,14 +64,12 @@ class AuthorQuiz(models.Model):
         related_name="quizzes",
     )
 
-    # ✅ link_type now only supports "material"
     link_type = models.CharField(
         max_length=20,
         choices=LINK_TYPE_CHOICES,
         default="material",
     )
 
-    # linked_id kept for DB compatibility but not used in frontend
     linked_id = models.IntegerField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -98,3 +94,75 @@ class QuizQuestion(models.Model):
 
     def __str__(self):
         return self.question[:50]
+
+
+# ================= 🆕 Q&A SYSTEM (Student → Author) =================
+
+class MaterialQuestion(models.Model):
+    """
+    Student asks a doubt/question on an author's material.
+    Shows in author's notification panel.
+    """
+    material = models.ForeignKey(
+        AuthorStudyMaterial,
+        on_delete=models.CASCADE,
+        related_name="questions"
+    )
+    asked_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="asked_questions"
+    )
+    question = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)  # for notification badge
+
+    def __str__(self):
+        return f"Q by {self.asked_by} on {self.material.title[:30]}"
+
+
+class MaterialAnswer(models.Model):
+    """
+    Author replies to a student's question.
+    Only the material's author can answer.
+    """
+    question = models.ForeignKey(
+        MaterialQuestion,
+        on_delete=models.CASCADE,
+        related_name="answers"
+    )
+    answered_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="given_answers"
+    )
+    answer = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Ans by {self.answered_by} to Q#{self.question.id}"
+
+
+# ================= 🆕 PEER NOTES SYSTEM (Author ↔ Author) =================
+
+class PeerComment(models.Model):
+    """
+    Authors collaborate by leaving comments/suggestions
+    on each other's study materials.
+    """
+    material = models.ForeignKey(
+        AuthorStudyMaterial,
+        on_delete=models.CASCADE,
+        related_name="peer_comments"
+    )
+    commented_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="peer_comments_made"
+    )
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)  # for author notification
+
+    def __str__(self):
+        return f"PeerComment by {self.commented_by} on {self.material.title[:30]}"

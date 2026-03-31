@@ -19,7 +19,8 @@ import QuizPage from "./pages/QuizPage";
 import CertificationSuccess from "./pages/CertificationSuccess";
 import CertificationPreview from "./pages/CertificatePreview";
 import AuthorMaterialDetail from "./pages/AuthorMaterialDetail";
-import AuthorMaterialsPage from "./pages/AuthorMaterialPage"; // 🆕
+import AuthorMaterialsPage from "./pages/AuthorMaterialPage";
+import AuthorQuizAttempt from "./pages/Authorquizattempt"; // 🆕
 
 function App() {
   return (
@@ -40,7 +41,10 @@ function App() {
 
       {/* AUTHOR MATERIAL */}
       <Route path="/author-material/:materialId" element={<AuthorMaterialDetail />} />
-      <Route path="/author-materials" element={<AuthorMaterialsPage />} /> {/* 🆕 filtered by author */}
+      <Route path="/author-materials" element={<AuthorMaterialsPage />} />
+
+      {/* 🆕 AUTHOR QUIZ ATTEMPT */}
+      <Route path="/author-quiz/:quizId" element={<AuthorQuizAttempt />} />
 
       {/* OTHER ROUTES */}
       <Route path="/previous-year-questions" element={<PreviousYearQuestions />} />
