@@ -26,7 +26,7 @@ export default function AuthorMaterialDetail() {
   const [peerText, setPeerText] = useState("");
   const [peerLoading, setPeerLoading] = useState(false);
 
-  // ── 🆕 Linked Quizzes state ────────────────────────────────────
+  // ── Linked Quizzes state ───────────────────────────────────────
   const [linkedQuizzes, setLinkedQuizzes] = useState([]);
   const [quizzesLoading, setQuizzesLoading] = useState(false);
 
@@ -66,7 +66,7 @@ export default function AuthorMaterialDetail() {
       .catch(() => {});
   }, [materialId]);
 
-  // ── 🆕 Fetch Linked Quizzes ────────────────────────────────────
+  // ── Fetch Linked Quizzes ───────────────────────────────────────
   useEffect(() => {
     if (!materialId) return;
     setQuizzesLoading(true);
@@ -148,14 +148,44 @@ export default function AuthorMaterialDetail() {
       .catch(() => setPeerLoading(false));
   };
 
+  // ── Download PDF handler (fetch + blob — forces download) ──────
+  const handleDownload = async (fileUrl, fileName) => {
+    try {
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName || "document.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Download failed:", err);
+      // fallback: open in new tab
+      window.open(fileUrl, "_blank");
+    }
+  };
+
   if (loading) return <><Navbar /><div style={styles.centerMsg}>Loading material...</div></>;
   if (!material || material.error) return <><Navbar /><div style={styles.centerMsg}>Material not found.</div></>;
 
   const isAuthor = loggedInRole === "author";
   const isOwner = loggedInUser === material.author_username;
+  const diffColor = {
+    easy: { bg: "#dcfce7", text: "#166534" },
+    medium: { bg: "#fef9c3", text: "#854d0e" },
+    hard: { bg: "#fee2e2", text: "#991b1b" },
+  };
 
-  // difficulty colors
-  const diffColor = { easy: { bg: "#dcfce7", text: "#166534" }, medium: { bg: "#fef9c3", text: "#854d0e" }, hard: { bg: "#fee2e2", text: "#991b1b" } };
+  const getPdfName = (url) => {
+    if (!url) return "Document.pdf";
+    const parts = url.split("/");
+    const raw = decodeURIComponent(parts[parts.length - 1]) || "Document.pdf";
+    // strip query params if any
+    return raw.split("?")[0];
+  };
 
   return (
     <>
@@ -168,49 +198,117 @@ export default function AuthorMaterialDetail() {
           {/* ── LEFT COL ── */}
           <div style={styles.leftCol}>
 
-            {/* Material content */}
+            {/* ── MATERIAL CONTENT BOX ── */}
             <div style={styles.contentBox}>
               <div style={styles.tagRow}>
                 <span style={styles.tag}>📚 {material.subject}</span>
                 <span style={styles.tag}>{material.course?.toUpperCase()}</span>
                 <span style={styles.tag}>{material.semester?.toUpperCase()}</span>
               </div>
+
               <h1 style={styles.title}>{material.title}</h1>
               {material.description && <p style={styles.description}>{material.description}</p>}
               <p style={styles.date}>
-                Published: {new Date(material.created_at).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}
+                Published: {new Date(material.created_at).toLocaleDateString("en-IN", {
+                  year: "numeric", month: "long", day: "numeric",
+                })}
               </p>
+
+              {/* Text Content */}
               {material.content && (
                 <div style={styles.contentSection}>
                   <h3 style={styles.sectionHeading}>Content</h3>
                   <div style={styles.contentText}>{material.content}</div>
                 </div>
               )}
+
+              {/* ── PDF CARD — blue, download fixed ── */}
               {material.file && (
                 <div style={styles.pdfSection}>
                   <h3 style={styles.sectionHeading}>PDF Material</h3>
-                  <iframe src={material.file} style={styles.pdfFrame} title="Study Material PDF" />
-                  <a href={material.file} target="_blank" rel="noreferrer" style={styles.downloadLink}>Open PDF in new tab ↗</a>
+
+                  <div style={styles.pdfCard}>
+
+                    {/* PDF Icon */}
+                    <div style={styles.pdfIconBox}>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                        <rect width="24" height="24" rx="6" fill="#e0e7ff" />
+                        <path
+                          d="M6 4h8l4 4v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2z"
+                          stroke="#4f46e5"
+                          strokeWidth="1.5"
+                          fill="none"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M14 4v4h4"
+                          stroke="#4f46e5"
+                          strokeWidth="1.5"
+                          fill="none"
+                          strokeLinejoin="round"
+                        />
+                        <text x="5" y="18" fontSize="5.5" fill="#4f46e5" fontWeight="bold" fontFamily="sans-serif">PDF</text>
+                      </svg>
+                    </div>
+
+                    {/* File info */}
+                    <div style={styles.pdfInfo}>
+                      <p style={styles.pdfName}>{getPdfName(material.file)}</p>
+                      <p style={styles.pdfMeta}>
+                        PDF Document &nbsp;·&nbsp; Uploaded by {material.author_name}
+                      </p>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div style={styles.pdfBtns}>
+                      {/* View — opens in new tab */}
+                      <a
+                        href={material.file}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={styles.viewPdfBtn}
+                      >
+                        View PDF ↗
+                      </a>
+
+                      {/* Download — forces file download via blob */}
+                      <button
+                        style={styles.downloadPdfBtn}
+                        onClick={() => handleDownload(material.file, getPdfName(material.file))}
+                      >
+                        ⬇ Download
+                      </button>
+                    </div>
+
+                  </div>
+
+                  <p style={styles.pdfHint}>
+                    📌 Click <strong>View PDF</strong> to read in a new tab, or <strong>Download</strong> to save it.
+                  </p>
                 </div>
               )}
+
               {!material.content && !material.file && (
                 <div style={styles.emptyContent}>No content available for this material.</div>
               )}
             </div>
 
-            {/* ── 🆕 LINKED QUIZZES SECTION ── */}
+            {/* ── LINKED QUIZZES SECTION ── */}
             {(quizzesLoading || linkedQuizzes.length > 0) && (
               <div style={styles.quizSection}>
                 <div style={styles.quizSectionHeader}>
-                  <div style={styles.quizSectionLeft}>                    <div>
-                      <h3 style={styles.quizSectionTitle}>Test Your Knowledge</h3>
+                  <div style={styles.quizSectionLeft}>
+                    <div>
+                      <h3 style={styles.quizSectionTitle}>🧠 Test Your Knowledge</h3>
                       <p style={styles.quizSectionSub}>
                         Quizzes linked to this material — attempt to check your understanding
                       </p>
                     </div>
                   </div>
                   {linkedQuizzes.length > 0 && (
-                    <span style={styles.quizCountBadge}>{linkedQuizzes.length} Quiz{linkedQuizzes.length > 1 ? "zes" : ""}</span>
+                    <span style={styles.quizCountBadge}>
+                      {linkedQuizzes.length} Quiz{linkedQuizzes.length > 1 ? "zes" : ""}
+                    </span>
                   )}
                 </div>
 
@@ -221,24 +319,17 @@ export default function AuthorMaterialDetail() {
                     const dc = diffColor[quiz.difficulty] || diffColor.easy;
                     return (
                       <div key={quiz.id} style={styles.quizCard}>
-
-                        {/* Quiz header */}
                         <div style={styles.quizCardTop}>
                           <span style={{ ...styles.diffBadge, background: dc.bg, color: dc.text }}>
-                            {quiz.difficulty === "easy" ? "" : quiz.difficulty === "medium" ? "" : ""} {quiz.difficulty.charAt(0).toUpperCase() + quiz.difficulty.slice(1)}
+                            {quiz.difficulty === "easy" ? "🟢" : quiz.difficulty === "medium" ? "🟡" : "🔴"}{" "}
+                            {quiz.difficulty.charAt(0).toUpperCase() + quiz.difficulty.slice(1)}
                           </span>
                           <span style={styles.timeBadge}>⏱ {quiz.time_limit} min</span>
                         </div>
 
-                        {/* Quiz title */}
                         <h4 style={styles.quizCardTitle}>{quiz.title}</h4>
+                        {quiz.description && <p style={styles.quizCardDesc}>{quiz.description}</p>}
 
-                        {/* Quiz description */}
-                        {quiz.description && (
-                          <p style={styles.quizCardDesc}>{quiz.description}</p>
-                        )}
-
-                        {/* Quiz stats */}
                         <div style={styles.quizStats}>
                           <div style={styles.quizStat}>
                             <span style={styles.quizStatNum}>{quiz.total_questions}</span>
@@ -247,7 +338,7 @@ export default function AuthorMaterialDetail() {
                           <div style={styles.quizStatDivider} />
                           <div style={styles.quizStat}>
                             <span style={styles.quizStatNum}>{quiz.total_marks}</span>
-                            <span style={styles.quizStatLabel}>Total Marks</span>
+                            <span style={styles.quizStatLabel}>Marks</span>
                           </div>
                           <div style={styles.quizStatDivider} />
                           <div style={styles.quizStat}>
@@ -256,7 +347,6 @@ export default function AuthorMaterialDetail() {
                           </div>
                         </div>
 
-                        {/* Attempt button */}
                         <button
                           style={styles.attemptBtn}
                           onClick={() => {
@@ -269,7 +359,6 @@ export default function AuthorMaterialDetail() {
                         >
                           Attempt Quiz →
                         </button>
-
                       </div>
                     );
                   })}
@@ -299,25 +388,49 @@ export default function AuthorMaterialDetail() {
                     <div style={styles.inputArea}>
                       <div style={styles.inputRow}>
                         <div style={styles.userAvatar}>{loggedInUser.charAt(0).toUpperCase()}</div>
-                        <textarea style={styles.textarea} placeholder="Type your question or doubt here..." value={questionText} onChange={(e) => setQuestionText(e.target.value)} rows={3} />
+                        <textarea
+                          style={styles.textarea}
+                          placeholder="Type your question or doubt here..."
+                          value={questionText}
+                          onChange={(e) => setQuestionText(e.target.value)}
+                          rows={3}
+                        />
                       </div>
                       <div style={{ textAlign: "right", marginTop: "10px" }}>
-                        <button style={{ ...styles.postBtn, opacity: questionLoading || !questionText.trim() ? 0.6 : 1 }} onClick={handleAskQuestion} disabled={questionLoading || !questionText.trim()}>
+                        <button
+                          style={{ ...styles.postBtn, opacity: questionLoading || !questionText.trim() ? 0.6 : 1 }}
+                          onClick={handleAskQuestion}
+                          disabled={questionLoading || !questionText.trim()}
+                        >
                           {questionLoading ? "Posting..." : "Post Question →"}
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div style={styles.loginNudge}>
-                      <button style={styles.loginNudgeBtn} onClick={() => navigate("/login")}>Login to ask a question</button>
+                      <button style={styles.loginNudgeBtn} onClick={() => navigate("/login")}>
+                        Login to ask a question
+                      </button>
                     </div>
                   )}
                   <div style={{ marginTop: "24px" }}>
-                    {questions.length === 0 && <p style={styles.emptyMsg}>No questions yet. Be the first to ask! 🙋</p>}
+                    {questions.length === 0 && (
+                      <p style={styles.emptyMsg}>No questions yet. Be the first to ask! 🙋</p>
+                    )}
                     {questions.map((q) => (
-                      <QuestionCard key={q.id} q={q} loggedInUser={loggedInUser} isOwner={isOwner}
+                      <QuestionCard
+                        key={q.id}
+                        q={q}
+                        loggedInUser={loggedInUser}
+                        isOwner={isOwner}
                         onAnswerPosted={(qId, newAnswer) => {
-                          setQuestions((prev) => prev.map((item) => item.id === qId ? { ...item, answers: [...item.answers, newAnswer] } : item));
+                          setQuestions((prev) =>
+                            prev.map((item) =>
+                              item.id === qId
+                                ? { ...item, answers: [...item.answers, newAnswer] }
+                                : item
+                            )
+                          );
                         }}
                       />
                     ))}
@@ -327,31 +440,56 @@ export default function AuthorMaterialDetail() {
 
               {activeTab === "peer" && isAuthor && (
                 <div>
-                  <p style={styles.boxSubtitle}>Collaborate with fellow authors — share insights, suggestions, or feedback.</p>
+                  <p style={styles.boxSubtitle}>
+                    Collaborate with fellow authors — share insights, suggestions, or feedback.
+                  </p>
                   <div style={styles.inputArea}>
                     <div style={styles.inputRow}>
-                      <div style={{ ...styles.userAvatar, background: "linear-gradient(135deg,#06b6d4,#4f46e5)" }}>{loggedInUser?.charAt(0).toUpperCase()}</div>
-                      <textarea style={styles.textarea} placeholder="Share a note, suggestion, or collaboration idea..." value={peerText} onChange={(e) => setPeerText(e.target.value)} rows={3} />
+                      <div style={{ ...styles.userAvatar, background: "linear-gradient(135deg,#06b6d4,#4f46e5)" }}>
+                        {loggedInUser?.charAt(0).toUpperCase()}
+                      </div>
+                      <textarea
+                        style={styles.textarea}
+                        placeholder="Share a note, suggestion, or collaboration idea..."
+                        value={peerText}
+                        onChange={(e) => setPeerText(e.target.value)}
+                        rows={3}
+                      />
                     </div>
                     <div style={{ textAlign: "right", marginTop: "10px" }}>
-                      <button style={{ ...styles.postBtn, background: "linear-gradient(135deg,#06b6d4,#4f46e5)", opacity: peerLoading || !peerText.trim() ? 0.6 : 1 }} onClick={handlePeerComment} disabled={peerLoading || !peerText.trim()}>
+                      <button
+                        style={{ ...styles.postBtn, background: "linear-gradient(135deg,#06b6d4,#4f46e5)", opacity: peerLoading || !peerText.trim() ? 0.6 : 1 }}
+                        onClick={handlePeerComment}
+                        disabled={peerLoading || !peerText.trim()}
+                      >
                         {peerLoading ? "Posting..." : "Add Peer Note →"}
                       </button>
                     </div>
                   </div>
                   <div style={{ marginTop: "24px" }}>
-                    {peerComments.length === 0 && <p style={styles.emptyMsg}>No peer notes yet. Start the collaboration! 🤝</p>}
+                    {peerComments.length === 0 && (
+                      <p style={styles.emptyMsg}>No peer notes yet. Start the collaboration! 🤝</p>
+                    )}
                     {peerComments.map((c) => (
                       <div key={c.id} style={styles.peerCard}>
                         <div style={styles.peerHeaderRow}>
                           {c.commenter_image ? (
                             <img src={c.commenter_image} alt="" style={styles.peerAvatar} />
                           ) : (
-                            <div style={{ ...styles.userAvatar, background: "linear-gradient(135deg,#06b6d4,#4f46e5)", width: "34px", height: "34px", fontSize: "13px" }}>{c.commented_by?.charAt(0).toUpperCase()}</div>
+                            <div style={{ ...styles.userAvatar, background: "linear-gradient(135deg,#06b6d4,#4f46e5)", width: "34px", height: "34px", fontSize: "13px" }}>
+                              {c.commented_by?.charAt(0).toUpperCase()}
+                            </div>
                           )}
                           <div>
-                            <p style={styles.peerName}>{c.commenter_name || c.commented_by}<span style={styles.authorTag}> · Author</span></p>
-                            <p style={styles.peerDate}>{new Date(c.created_at).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}</p>
+                            <p style={styles.peerName}>
+                              {c.commenter_name || c.commented_by}
+                              <span style={styles.authorTag}> · Author</span>
+                            </p>
+                            <p style={styles.peerDate}>
+                              {new Date(c.created_at).toLocaleDateString("en-IN", {
+                                year: "numeric", month: "short", day: "numeric",
+                              })}
+                            </p>
                           </div>
                         </div>
                         <p style={styles.peerComment}>{c.comment}</p>
@@ -371,26 +509,45 @@ export default function AuthorMaterialDetail() {
               {material.author_image ? (
                 <img src={material.author_image} alt="author" style={styles.avatarImg} />
               ) : (
-                <div style={styles.avatarFallback}>{material.author_name?.charAt(0).toUpperCase()}</div>
+                <div style={styles.avatarFallback}>
+                  {material.author_name?.charAt(0).toUpperCase()}
+                </div>
               )}
             </div>
             <h2 style={styles.authorName}>{material.author_name}</h2>
             <p style={styles.authorUsername}>@{material.author_username}</p>
+
             <div style={styles.followerRow}>
               <span style={styles.followerCount}>{followerCount}</span>
               <span style={styles.followerLabel}>Followers</span>
             </div>
+
             {loggedInUser && loggedInUser !== material.author_username && (
-              <button style={{ ...styles.followBtn, background: isFollowing ? "#e0e7ff" : "#4f46e5", color: isFollowing ? "#4f46e5" : "#fff", opacity: followLoading ? 0.7 : 1 }} onClick={handleFollowToggle} disabled={followLoading}>
+              <button
+                style={{ ...styles.followBtn, background: isFollowing ? "#e0e7ff" : "#4f46e5", color: isFollowing ? "#4f46e5" : "#fff", opacity: followLoading ? 0.7 : 1 }}
+                onClick={handleFollowToggle}
+                disabled={followLoading}
+              >
                 {followLoading ? "..." : isFollowing ? "Following ✓" : "+ Follow Author"}
               </button>
             )}
-            {!loggedInUser && (
-              <button style={styles.followBtn} onClick={() => navigate("/login", { state: { message: "Please login to follow authors." } })}>Login to Follow</button>
-            )}
-            <button style={styles.moreBtn} onClick={() => navigate(`/author-materials?author=${material.author_username}`)}>More by this Author</button>
 
-            {/* Stats */}
+            {!loggedInUser && (
+              <button
+                style={styles.followBtn}
+                onClick={() => navigate("/login", { state: { message: "Please login to follow authors." } })}
+              >
+                Login to Follow
+              </button>
+            )}
+
+            <button
+              style={styles.moreBtn}
+              onClick={() => navigate(`/author-materials?author=${material.author_username}`)}
+            >
+              More by this Author
+            </button>
+
             <div style={styles.statBox}>
               <div style={styles.statItem}>
                 <span style={styles.statNum}>{linkedQuizzes.length}</span>
@@ -409,7 +566,7 @@ export default function AuthorMaterialDetail() {
   );
 }
 
-// ── Question Card (unchanged) ──────────────────────────────────────────────
+// ── Question Card ──────────────────────────────────────────────────────────
 function QuestionCard({ q, loggedInUser, isOwner, onAnswerPosted }) {
   const [showReply, setShowReply] = useState(false);
   const [replyText, setReplyText] = useState("");
@@ -426,8 +583,14 @@ function QuestionCard({ q, loggedInUser, isOwner, onAnswerPosted }) {
       .then((r) => r.json())
       .then((d) => {
         if (d.answer_id) {
-          onAnswerPosted(q.id, { id: d.answer_id, answer: replyText.trim(), answered_by: loggedInUser, created_at: new Date().toISOString() });
-          setReplyText(""); setShowReply(false);
+          onAnswerPosted(q.id, {
+            id: d.answer_id,
+            answer: replyText.trim(),
+            answered_by: loggedInUser,
+            created_at: new Date().toISOString(),
+          });
+          setReplyText("");
+          setShowReply(false);
         }
         setReplyLoading(false);
       })
@@ -440,20 +603,32 @@ function QuestionCard({ q, loggedInUser, isOwner, onAnswerPosted }) {
         <div style={qS.avatar}>{q.asked_by?.charAt(0).toUpperCase()}</div>
         <div style={{ flex: 1 }}>
           <p style={qS.name}>{q.asked_by}</p>
-          <p style={qS.date}>{new Date(q.created_at).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}</p>
+          <p style={qS.date}>
+            {new Date(q.created_at).toLocaleDateString("en-IN", {
+              year: "numeric", month: "short", day: "numeric",
+            })}
+          </p>
         </div>
         <span style={qS.badge}>Question</span>
       </div>
+
       <p style={qS.questionText}>{q.question}</p>
+
       {q.answers?.length > 0 && (
         <div style={qS.answersBlock}>
           {q.answers.map((a) => (
             <div key={a.id} style={qS.answerCard}>
               <div style={qS.answerHeader}>
-                <div style={{ ...qS.avatar, background: "linear-gradient(135deg,#4f46e5,#06b6d4)", width: "28px", height: "28px", fontSize: "12px" }}>{a.answered_by?.charAt(0).toUpperCase()}</div>
+                <div style={{ ...qS.avatar, background: "linear-gradient(135deg,#4f46e5,#06b6d4)", width: "28px", height: "28px", fontSize: "12px" }}>
+                  {a.answered_by?.charAt(0).toUpperCase()}
+                </div>
                 <div>
                   <p style={qS.answerBy}>{a.answered_by}<span style={qS.authorTag}> · Author</span></p>
-                  <p style={qS.date}>{new Date(a.created_at).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}</p>
+                  <p style={qS.date}>
+                    {new Date(a.created_at).toLocaleDateString("en-IN", {
+                      year: "numeric", month: "short", day: "numeric",
+                    })}
+                  </p>
                 </div>
               </div>
               <p style={qS.answerText}>{a.answer}</p>
@@ -461,16 +636,29 @@ function QuestionCard({ q, loggedInUser, isOwner, onAnswerPosted }) {
           ))}
         </div>
       )}
+
       {isOwner && (
         <div style={{ marginTop: "10px" }}>
           {!showReply ? (
             <button style={qS.replyBtn} onClick={() => setShowReply(true)}>↩ Reply</button>
           ) : (
             <div style={qS.replyBox}>
-              <textarea style={qS.replyTextarea} placeholder="Write your answer..." value={replyText} onChange={(e) => setReplyText(e.target.value)} rows={3} />
+              <textarea
+                style={qS.replyTextarea}
+                placeholder="Write your answer..."
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                rows={3}
+              />
               <div style={{ display: "flex", gap: "8px", marginTop: "8px", justifyContent: "flex-end" }}>
-                <button style={qS.cancelBtn} onClick={() => { setShowReply(false); setReplyText(""); }}>Cancel</button>
-                <button style={{ ...qS.submitBtn, opacity: replyLoading || !replyText.trim() ? 0.6 : 1 }} onClick={handleReply} disabled={replyLoading || !replyText.trim()}>
+                <button style={qS.cancelBtn} onClick={() => { setShowReply(false); setReplyText(""); }}>
+                  Cancel
+                </button>
+                <button
+                  style={{ ...qS.submitBtn, opacity: replyLoading || !replyText.trim() ? 0.6 : 1 }}
+                  onClick={handleReply}
+                  disabled={replyLoading || !replyText.trim()}
+                >
                   {replyLoading ? "Posting..." : "Post Answer"}
                 </button>
               </div>
@@ -509,6 +697,7 @@ const styles = {
   backBtn: { background: "none", border: "none", color: "#4f46e5", fontSize: "15px", fontWeight: "600", cursor: "pointer", marginBottom: "20px", padding: "0" },
   wrapper: { display: "flex", gap: "30px", alignItems: "flex-start", maxWidth: "1100px", margin: "0 auto" },
   leftCol: { flex: 1, display: "flex", flexDirection: "column", gap: "24px" },
+
   contentBox: { background: "#fff", borderRadius: "16px", padding: "35px", boxShadow: "0 10px 25px rgba(0,0,0,0.06)" },
   tagRow: { display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "14px" },
   tag: { background: "#e0e7ff", color: "#3730a3", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "600" },
@@ -518,16 +707,54 @@ const styles = {
   sectionHeading: { fontSize: "16px", fontWeight: "700", color: "#1e293b", marginBottom: "12px", borderBottom: "2px solid #e0e7ff", paddingBottom: "6px" },
   contentSection: { marginBottom: "30px" },
   contentText: { fontSize: "15px", color: "#334155", lineHeight: "1.8", whiteSpace: "pre-wrap" },
-  pdfSection: { marginTop: "20px" },
-  pdfFrame: { width: "100%", height: "520px", border: "1px solid #e2e8f0", borderRadius: "12px", marginBottom: "10px" },
-  downloadLink: { color: "#4f46e5", fontSize: "13px", fontWeight: "600", textDecoration: "none" },
   emptyContent: { textAlign: "center", color: "#94a3b8", fontSize: "14px", padding: "40px 0" },
 
-  // 🆕 Quiz section
+  // ── PDF Card — blue theme, download fixed ──
+  pdfSection: { marginTop: "20px" },
+  pdfCard: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    background: "linear-gradient(135deg,#eff6ff,#fff)",
+    border: "1.5px solid #bfdbfe",
+    borderRadius: "14px",
+    padding: "20px 22px",
+    marginBottom: "12px",
+    flexWrap: "wrap",
+  },
+  pdfIconBox: { flexShrink: 0 },
+  pdfInfo: { flex: 1, minWidth: "140px" },
+  pdfName: { fontSize: "14px", fontWeight: "700", color: "#1e293b", margin: "0 0 4px 0", wordBreak: "break-word" },
+  pdfMeta: { fontSize: "12px", color: "#94a3b8", margin: 0 },
+  pdfBtns: { display: "flex", gap: "10px", flexWrap: "wrap", flexShrink: 0 },
+  viewPdfBtn: {
+    padding: "10px 20px",
+    borderRadius: "20px",
+    background: "#4f46e5",
+    color: "#fff",
+    fontSize: "13px",
+    fontWeight: "700",
+    textDecoration: "none",
+    display: "inline-block",
+    cursor: "pointer",
+  },
+  downloadPdfBtn: {
+    padding: "10px 20px",
+    borderRadius: "20px",
+    background: "#fff",
+    color: "#4f46e5",
+    border: "1.5px solid #c7d2fe",
+    fontSize: "13px",
+    fontWeight: "700",
+    cursor: "pointer",
+    display: "inline-block",
+  },
+  pdfHint: { fontSize: "12px", color: "#94a3b8", margin: "4px 0 0 0" },
+
+  // Quiz section
   quizSection: { background: "#fff", borderRadius: "16px", padding: "28px", boxShadow: "0 10px 25px rgba(0,0,0,0.06)" },
   quizSectionHeader: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "22px", flexWrap: "wrap", gap: "12px" },
   quizSectionLeft: { display: "flex", alignItems: "flex-start", gap: "14px" },
-  quizSectionIcon: { fontSize: "28px", lineHeight: 1 },
   quizSectionTitle: { fontSize: "18px", fontWeight: "700", color: "#1e293b", margin: "0 0 4px 0" },
   quizSectionSub: { fontSize: "13px", color: "#64748b", margin: 0 },
   quizCountBadge: { background: "#e0e7ff", color: "#4f46e5", padding: "6px 16px", borderRadius: "20px", fontSize: "13px", fontWeight: "700", flexShrink: 0 },

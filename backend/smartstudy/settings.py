@@ -129,7 +129,15 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 AUTH_USER_MODEL = 'accounts.User'
+
+# ── CORS ──────────────────────────────────────────────────────────
 CORS_ALLOW_ALL_ORIGINS = True
 
+# ── MEDIA ─────────────────────────────────────────────────────────
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# ── 🆕 FIX: Allow PDF iframe from same origin ─────────────────────
+# "SAMEORIGIN" allows iframe only from localhost (our own frontend)
+# This fixes "Refused to connect" error in PDF viewer
+X_FRAME_OPTIONS = 'SAMEORIGIN'
