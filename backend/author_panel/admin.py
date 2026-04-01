@@ -6,7 +6,7 @@ from .models import (
     MaterialQuestion,
     MaterialAnswer,
     PeerComment,
-    AdminNotification,  # 🆕
+    AdminNotification,
 )
 
 
@@ -33,7 +33,7 @@ class QuizQuestionAdmin(admin.ModelAdmin):
     list_filter = ('correct_answer',)
 
 
-# ================= Q&A SYSTEM =================
+# ================= Q&A SYSTEM (UNCHANGED) =================
 
 class MaterialAnswerInline(admin.TabularInline):
     model = MaterialAnswer
@@ -87,7 +87,7 @@ class MaterialAnswerAdmin(admin.ModelAdmin):
     short_answer.short_description = "Answer"
 
 
-# ================= PEER NOTES SYSTEM =================
+# ================= PEER NOTES SYSTEM (UNCHANGED) =================
 
 @admin.register(PeerComment)
 class PeerCommentAdmin(admin.ModelAdmin):
@@ -122,12 +122,25 @@ class AdminNotificationAdmin(admin.ModelAdmin):
         'is_read',
         'created_at',
     )
-    list_filter = ('notification_type', 'is_read', 'created_at')
+    list_filter  = ('notification_type', 'is_read', 'created_at')
     search_fields = ('title', 'message', 'recipient__username')
     ordering = ('-created_at',)
 
-    # Admin can write title, message, type, recipient
-    fields = ('recipient', 'notification_type', 'title', 'message', 'is_read')
+    fieldsets = (
+        ("📋 Notification Content", {
+            "fields": ("notification_type", "title", "message"),
+        }),
+        ("🎯 Target Author", {
+            "description": (
+                "⚠️ Leave 'Recipient' BLANK to broadcast to ALL authors. "
+                "Select a specific author to send only to them."
+            ),
+            "fields": ("recipient",),
+        }),
+        ("📌 Status", {
+            "fields": ("is_read",),
+        }),
+    )
 
     def recipient_display(self, obj):
         return obj.recipient.username if obj.recipient else "📢 ALL AUTHORS"
@@ -135,12 +148,11 @@ class AdminNotificationAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         """
-        If recipient is blank → create one notification per author.
-        If recipient is set → save normally for that specific author.
+        If recipient is blank → broadcast to ALL authors (one entry per author).
+        If recipient is set  → save normally for that specific author only.
         """
         from accounts.models import User
         if not obj.recipient:
-            # broadcast — create one entry per author
             authors = User.objects.filter(role="author")
             for author in authors:
                 AdminNotification.objects.create(

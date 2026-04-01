@@ -20,10 +20,14 @@ from .views import (
     add_peer_comment, get_peer_comments,
     get_author_peer_notifications, mark_peer_comments_read,
 
-    # ── 🆕 QUIZ ATTEMPT ──
+    # ── QUIZ ATTEMPT (UNCHANGED) ──
     get_quizzes_for_material,
     get_author_quiz_detail,
     submit_author_quiz,
+
+    # ── 🆕 ADMIN NOTIFICATIONS ──
+    get_admin_notifications,
+    mark_admin_notifications_read,
 )
 
 urlpatterns = [
@@ -54,18 +58,21 @@ urlpatterns = [
     path('qa-notifications/<str:username>/', get_author_qa_notifications),
     path('mark-questions-read/', mark_questions_read),
 
-    #Leaderboard route (UNCHANGED)
+    # ── LEADERBOARD (UNCHANGED) ──
     path('leaderboard/<str:username>/', author_leaderboard),
-    
-    
+
     # ── PEER NOTES ROUTES (UNCHANGED) ──
     path('peer-comment/', add_peer_comment),
     path('peer-comments/<int:material_id>/', get_peer_comments),
     path('peer-notifications/<str:username>/', get_author_peer_notifications),
     path('mark-peer-read/', mark_peer_comments_read),
 
-    # ── 🆕 QUIZ ATTEMPT ROUTES ──
+    # ── QUIZ ATTEMPT ROUTES (UNCHANGED) ──
     path('material-quizzes/<int:material_id>/', get_quizzes_for_material),
     path('quiz-detail/<int:quiz_id>/', get_author_quiz_detail),
     path('submit-quiz/', submit_author_quiz),
+
+    # ── 🆕 ADMIN NOTIFICATION ROUTES ──
+    path('admin-notifications/<str:username>/', get_admin_notifications),
+    path('mark-admin-notifications-read/', mark_admin_notifications_read),
 ]

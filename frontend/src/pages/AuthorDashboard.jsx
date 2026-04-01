@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import ProfileSection from "../components/author/AuthorProfile";
-import UploadSection from "../components/author/UploadMaterial";
-import QuizSection from "../components/author/CreateQuiz";
+import ProfileSection    from "../components/author/AuthorProfile";
+import UploadSection     from "../components/author/UploadMaterial";
+import QuizSection       from "../components/author/CreateQuiz";
 import LeaderboardSection from "../components/author/Leaderboard";
 import NotificationSection from "../components/author/Notifications";
-import AuthorMaterials from "../components/author/AuthorMaterials";
+import AuthorMaterials   from "../components/author/AuthorMaterials";
 
 export default function AuthorDashboard() {
   const navigate = useNavigate();
@@ -22,16 +22,20 @@ export default function AuthorDashboard() {
 
   const [refreshSidebar, setRefreshSidebar] = useState(false);
 
-  // 🆕 followers state
-  const [followers, setFollowers] = useState([]);
-  const [followerCount, setFollowerCount] = useState(0);
+  // followers state (UNCHANGED)
+  const [followers, setFollowers]               = useState([]);
+  const [followerCount, setFollowerCount]       = useState(0);
   const [followersLoading, setFollowersLoading] = useState(false);
+
+  // 🆕 admin unread badge count for sidebar
+  const [adminUnread, setAdminUnread] = useState(0);
 
   useEffect(() => {
     if (!user) navigate("/login");
     if (role !== "author") navigate("/");
   }, [user, role, navigate]);
 
+  // fetch profile (UNCHANGED)
   useEffect(() => {
     if (!user) return;
 
@@ -46,6 +50,7 @@ export default function AuthorDashboard() {
       });
   }, [user, refreshSidebar]);
 
+  // listen for profile update event (UNCHANGED)
   useEffect(() => {
     const handleStorageChange = () => {
       setRefreshSidebar((prev) => !prev);
@@ -56,7 +61,16 @@ export default function AuthorDashboard() {
     };
   }, []);
 
-  // 🆕 fetch followers list
+  // 🆕 fetch admin unread count on dashboard load
+  useEffect(() => {
+    if (!user) return;
+    fetch(`http://127.0.0.1:8000/api/author/admin-notifications/${user}/`)
+      .then((r) => r.json())
+      .then((d) => setAdminUnread(d.unread_count || 0))
+      .catch(() => {});
+  }, [user]);
+
+  // fetch followers list (UNCHANGED)
   const fetchFollowers = () => {
     setFollowersLoading(true);
     fetch(`http://127.0.0.1:8000/api/author-followers/${user}/`)
@@ -90,13 +104,16 @@ export default function AuthorDashboard() {
       case "leaderboard":
         return <LeaderboardSection />;
       case "notifications":
-        return <NotificationSection />;
+        // 🆕 onAdminRead → sidebar badge clear hoti hai
+        return <NotificationSection onAdminRead={() => setAdminUnread(0)} />;
       case "followers":
-        return <FollowersSection
-                  followers={followers}
-                  followerCount={followerCount}
-                  loading={followersLoading}
-               />;
+        return (
+          <FollowersSection
+            followers={followers}
+            followerCount={followerCount}
+            loading={followersLoading}
+          />
+        );
       default:
         return <ProfileSection />;
     }
@@ -107,6 +124,7 @@ export default function AuthorDashboard() {
   return (
     <div style={styles.page}>
 
+      {/* ── HERO HEADER (UNCHANGED) ── */}
       <div style={styles.hero}>
         <div>
           <h1 style={styles.heroTitle}>Author Dashboard</h1>
@@ -119,7 +137,7 @@ export default function AuthorDashboard() {
 
       <div style={styles.wrapper}>
 
-        {/* SIDEBAR */}
+        {/* ── SIDEBAR ── */}
         <div style={styles.sidebar}>
 
           <div style={styles.profileBox}>
@@ -137,12 +155,13 @@ export default function AuthorDashboard() {
             <h3 style={{ marginTop: "10px" }}>{profile.name || user}</h3>
             <p style={styles.roleText}>Author Account</p>
 
-            {/* 🆕 Follower count pill in sidebar */}
+            {/* Follower count pill (UNCHANGED) */}
             <div style={styles.followerPill}>
               👥 {followerCount} Followers
             </div>
           </div>
 
+          {/* Profile */}
           <button
             style={activeSection === "profile" ? styles.menuBtnActive : styles.menuBtn}
             onClick={() => setActiveSection("profile")}
@@ -150,6 +169,7 @@ export default function AuthorDashboard() {
             Profile
           </button>
 
+          {/* Upload Material */}
           <button
             style={activeSection === "upload" ? styles.menuBtnActive : styles.menuBtn}
             onClick={() => setActiveSection("upload")}
@@ -157,6 +177,7 @@ export default function AuthorDashboard() {
             Upload Material
           </button>
 
+          {/* My Materials */}
           <button
             style={activeSection === "materials" ? styles.menuBtnActive : styles.menuBtn}
             onClick={() => setActiveSection("materials")}
@@ -164,6 +185,7 @@ export default function AuthorDashboard() {
             My Materials
           </button>
 
+          {/* Create Quiz */}
           <button
             style={activeSection === "quiz" ? styles.menuBtnActive : styles.menuBtn}
             onClick={() => setActiveSection("quiz")}
@@ -171,7 +193,7 @@ export default function AuthorDashboard() {
             Create Quiz
           </button>
 
-          {/* 🆕 Followers button */}
+          {/* My Followers (UNCHANGED) */}
           <button
             style={activeSection === "followers" ? styles.menuBtnActive : styles.menuBtn}
             onClick={() => {
@@ -182,6 +204,7 @@ export default function AuthorDashboard() {
             My Followers
           </button>
 
+          {/* Leaderboard */}
           <button
             style={activeSection === "leaderboard" ? styles.menuBtnActive : styles.menuBtn}
             onClick={() => setActiveSection("leaderboard")}
@@ -189,20 +212,32 @@ export default function AuthorDashboard() {
             Leaderboard
           </button>
 
+          {/* 🆕 Notifications — red badge if admin unread > 0 */}
           <button
-            style={activeSection === "notifications" ? styles.menuBtnActive : styles.menuBtn}
+            style={{
+              ...(activeSection === "notifications"
+                ? styles.menuBtnActive
+                : styles.menuBtn),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
             onClick={() => setActiveSection("notifications")}
           >
-            Notifications
+            <span>Notifications</span>
+            {adminUnread > 0 && (
+              <span style={styles.sidebarBadge}>{adminUnread}</span>
+            )}
           </button>
 
+          {/* Logout */}
           <button style={styles.logoutBtn} onClick={handleLogout}>
             Logout
           </button>
 
         </div>
 
-        {/* MAIN CONTENT */}
+        {/* ── MAIN CONTENT ── */}
         <div style={styles.mainContent}>
           <div style={styles.contentArea}>
             {renderSection()}
@@ -215,7 +250,7 @@ export default function AuthorDashboard() {
 }
 
 
-// ===================== 🆕 FOLLOWERS SECTION COMPONENT =====================
+// ===================== FOLLOWERS SECTION COMPONENT (UNCHANGED) =====================
 
 function FollowersSection({ followers, followerCount, loading }) {
   return (
@@ -274,7 +309,7 @@ function FollowersSection({ followers, followerCount, loading }) {
   );
 }
 
-// Followers section styles
+// Followers section styles (UNCHANGED)
 const fStyles = {
   header: {
     display: "flex",
@@ -379,7 +414,7 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
   },
-  heroTitle: { margin: 0, fontSize: "34px", fontWeight: "700" },
+  heroTitle:    { margin: 0, fontSize: "34px", fontWeight: "700" },
   heroSubtitle: { marginTop: "6px", fontSize: "16px", opacity: 0.9 },
   heroHomeBtn: {
     padding: "10px 25px",
@@ -430,7 +465,7 @@ const styles = {
   },
   roleText: { fontSize: "13px", color: "#64748b" },
 
-  // 🆕 follower pill under profile
+  // follower pill (UNCHANGED)
   followerPill: {
     marginTop: "8px",
     display: "inline-block",
@@ -463,6 +498,22 @@ const styles = {
     boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
     textAlign: "left",
   },
+
+  // 🆕 red badge on Notifications sidebar button
+  sidebarBadge: {
+    background: "#ef4444",
+    color: "#fff",
+    borderRadius: "50%",
+    minWidth: "20px",
+    height: "20px",
+    padding: "0 5px",
+    fontSize: "11px",
+    fontWeight: "700",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   logoutBtn: {
     marginTop: "auto",
     padding: "16px",
