@@ -154,7 +154,7 @@ export default function AuthorMaterialsPage() {
               <h1 style={styles.authorName}>{authorInfo.name}</h1>
               <p style={styles.authorUsername}>@{authorInfo.username}</p>
               <div style={styles.followerPill}>
-                👥 {followerCount} Followers
+                 {followerCount} Followers
               </div>
             </div>
 
@@ -230,7 +230,7 @@ export default function AuthorMaterialsPage() {
 
                 {/* Tags */}
                 <div style={styles.tagRow}>
-                  <span style={styles.tag}>📚 {material.subject}</span>
+                  <span style={styles.tag}> {material.subject}</span>
                   {material.course && (
                     <span style={styles.tag}>{material.course.toUpperCase()}</span>
                   )}

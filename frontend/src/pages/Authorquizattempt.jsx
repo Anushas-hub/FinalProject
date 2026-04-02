@@ -6,16 +6,16 @@ export default function AuthorQuizAttempt() {
   const { quizId } = useParams();
   const navigate = useNavigate();
   const loggedInUser = localStorage.getItem("user");
+  const loggedInRole = localStorage.getItem("role");
 
-  // ── States ─────────────────────────────────────────────────────
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [answers, setAnswers] = useState({}); // { question_id: "A" }
+  const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(null); // seconds
-  const [activeQ, setActiveQ] = useState(0); // current question index
+  const [timeLeft, setTimeLeft] = useState(null);
+  const [activeQ, setActiveQ] = useState(0);
   const timerRef = useRef(null);
 
   // ── Fetch quiz ─────────────────────────────────────────────────
@@ -29,7 +29,7 @@ export default function AuthorQuizAttempt() {
       .then((d) => {
         if (d.error) { setLoading(false); return; }
         setQuiz(d);
-        setTimeLeft(d.time_limit * 60); // convert mins to secs
+        setTimeLeft(d.time_limit * 60);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -39,18 +39,15 @@ export default function AuthorQuizAttempt() {
   useEffect(() => {
     if (timeLeft === null || submitted) return;
     if (timeLeft <= 0) { handleSubmit(true); return; }
-
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) { clearInterval(timerRef.current); return 0; }
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timerRef.current);
   }, [timeLeft === null, submitted]);
 
-  // auto-submit when time runs out
   useEffect(() => {
     if (timeLeft === 0 && !submitted) handleSubmit(true);
   }, [timeLeft]);
@@ -71,6 +68,21 @@ export default function AuthorQuizAttempt() {
         setResult(d);
         setSubmitted(true);
         setSubmitting(false);
+
+        // 🆕 Track author quiz attempt for leaderboard (students only)
+        if (loggedInUser && loggedInRole !== "author") {
+          fetch("http://127.0.0.1:8000/api/save-author-quiz-attempt/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: loggedInUser,
+              quiz_id: quizId,
+              quiz_title: quiz?.title || "",
+              score: d.score || 0,
+              total_marks: d.total_marks || 0,
+            }),
+          }).catch(() => {});
+        }
       })
       .catch(() => setSubmitting(false));
   };
@@ -82,9 +94,13 @@ export default function AuthorQuizAttempt() {
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  const timerColor = timeLeft !== null && timeLeft < 60 ? "#d15f5f" : timeLeft < 180 ? "#d97706" : "#4f46e5";
+  const timerColor =
+    timeLeft !== null && timeLeft < 60
+      ? "#d15f5f"
+      : timeLeft < 180
+      ? "#d97706"
+      : "#4f46e5";
 
-  // ── Loading ────────────────────────────────────────────────────
   if (loading) return <><Navbar /><div style={S.centerMsg}>Loading quiz...</div></>;
   if (!quiz) return <><Navbar /><div style={S.centerMsg}>Quiz not found.</div></>;
 
@@ -106,8 +122,6 @@ export default function AuthorQuizAttempt() {
       <>
         <Navbar />
         <div style={S.resultPage}>
-
-          {/* Result hero */}
           <div style={{ ...S.resultHero, background: passed ? "linear-gradient(135deg,#4f46e5,#06b6d4)" : "linear-gradient(135deg,#dc2626,#f97316)" }}>
             <div style={S.resultEmoji}>{pct >= 80 ? "" : pct >= 50 ? "✅" : ""}</div>
             <h1 style={S.resultTitle}>{pct >= 80 ? "Excellent!" : pct >= 50 ? "Well Done!" : "Keep Practicing!"}</h1>
@@ -117,8 +131,6 @@ export default function AuthorQuizAttempt() {
           </div>
 
           <div style={S.resultBody}>
-
-            {/* Stats row */}
             <div style={S.statsRow}>
               <div style={S.statCard}>
                 <span style={S.statBig}>{result.correct_count}</span>
@@ -133,27 +145,23 @@ export default function AuthorQuizAttempt() {
                 <span style={S.statSmall}>Total Qs</span>
               </div>
               <div style={S.statCard}>
-                <span style={{ ...S.statBig, color: passed ? "#16a34a" : "#dc2626" }}>{passed ? "Pass ✓" : "Fail ✗"}</span>
+                <span style={{ ...S.statBig, color: passed ? "#16a34a" : "#dc2626" }}>
+                  {passed ? "Pass ✓" : "Fail ✗"}
+                </span>
                 <span style={S.statSmall}>Result</span>
               </div>
             </div>
 
-            {/* Detailed results */}
             <h3 style={S.reviewHeading}>Detailed Review</h3>
             {result.results?.map((r, i) => (
               <div key={r.id} style={{ ...S.reviewCard, borderLeft: r.is_correct ? "4px solid #22c55e" : "4px solid #ef4444" }}>
-
-                {/* Q header */}
                 <div style={S.reviewQHeader}>
                   <span style={S.reviewQNum}>Q{i + 1}</span>
                   <span style={{ ...S.reviewBadge, background: r.is_correct ? "#dcfce7" : "#fee2e2", color: r.is_correct ? "#166534" : "#991b1b" }}>
                     {r.is_correct ? `+${r.marks} marks ✓` : "0 marks ✗"}
                   </span>
                 </div>
-
                 <p style={S.reviewQ}>{r.question}</p>
-
-                {/* Options */}
                 <div style={S.reviewOptions}>
                   {[
                     { key: "A", val: r.option_a },
@@ -166,7 +174,6 @@ export default function AuthorQuizAttempt() {
                     let bg = "#f8fafc", border = "#e2e8f0", color = "#334155";
                     if (isCorrect) { bg = "#dcfce7"; border = "#22c55e"; color = "#166534"; }
                     else if (isYours && !isCorrect) { bg = "#fee2e2"; border = "#ef4444"; color = "#991b1b"; }
-
                     return (
                       <div key={opt.key} style={{ ...S.reviewOpt, background: bg, border: `1.5px solid ${border}`, color }}>
                         <span style={S.reviewOptKey}>{opt.key}</span>
@@ -177,25 +184,23 @@ export default function AuthorQuizAttempt() {
                     );
                   })}
                 </div>
-
-                {/* Explanation */}
                 {r.explanation && (
                   <div style={S.explanationBox}>
-                    <span style={S.explanationLabel}>💡 Explanation:</span> {r.explanation}
+                    <span style={S.explanationLabel}> Explanation:</span> {r.explanation}
                   </div>
                 )}
-
               </div>
             ))}
 
-            {/* Action buttons */}
             <div style={S.resultActions}>
               <button style={S.backMaterialBtn} onClick={() => navigate(-1)}>← Back to Material</button>
-              <button style={S.retryBtn} onClick={() => { setSubmitted(false); setResult(null); setAnswers({}); setActiveQ(0); setTimeLeft(quiz.time_limit * 60); }}>
+              <button style={S.retryBtn} onClick={() => {
+                setSubmitted(false); setResult(null); setAnswers({});
+                setActiveQ(0); setTimeLeft(quiz.time_limit * 60);
+              }}>
                 Retry Quiz
               </button>
             </div>
-
           </div>
         </div>
       </>
@@ -209,8 +214,6 @@ export default function AuthorQuizAttempt() {
     <>
       <Navbar />
       <div style={S.page}>
-
-        {/* Top bar */}
         <div style={S.topBar}>
           <div style={S.topLeft}>
             <button style={S.exitBtn} onClick={() => navigate(-1)}>✕ Exit</button>
@@ -225,8 +228,6 @@ export default function AuthorQuizAttempt() {
               </div>
             </div>
           </div>
-
-          {/* Timer */}
           <div style={{ ...S.timerBox, borderColor: timerColor }}>
             <span style={S.timerIcon}>⏱</span>
             <span style={{ ...S.timerText, color: timerColor }}>{formatTime(timeLeft)}</span>
@@ -234,8 +235,6 @@ export default function AuthorQuizAttempt() {
         </div>
 
         <div style={S.body}>
-
-          {/* Left: Question navigator */}
           <div style={S.navigator}>
             <p style={S.navTitle}>Questions</p>
             <div style={S.navGrid}>
@@ -257,16 +256,12 @@ export default function AuthorQuizAttempt() {
                 );
               })}
             </div>
-
-            {/* Progress */}
             <div style={S.progressBox}>
               <div style={S.progressBar}>
                 <div style={{ ...S.progressFill, width: `${(answeredCount / totalQ) * 100}%` }} />
               </div>
               <p style={S.progressText}>{answeredCount}/{totalQ} Answered</p>
             </div>
-
-            {/* Submit button */}
             <button
               style={{ ...S.submitBtn, opacity: submitting ? 0.7 : 1 }}
               onClick={() => handleSubmit(false)}
@@ -274,7 +269,6 @@ export default function AuthorQuizAttempt() {
             >
               {submitting ? "Submitting..." : "Submit Quiz"}
             </button>
-
             {answeredCount < totalQ && (
               <p style={S.unattemptedWarning}>
                 ⚠ {totalQ - answeredCount} question{totalQ - answeredCount > 1 ? "s" : ""} unanswered
@@ -282,19 +276,14 @@ export default function AuthorQuizAttempt() {
             )}
           </div>
 
-          {/* Right: Current question */}
           <div style={S.questionPanel}>
             {currentQ && (
               <>
-                {/* Q header */}
                 <div style={S.qHeader}>
                   <span style={S.qNum}>Question {activeQ + 1} of {totalQ}</span>
                   <span style={S.qMarks}>{currentQ.marks} mark{currentQ.marks > 1 ? "s" : ""}</span>
                 </div>
-
                 <p style={S.qText}>{currentQ.question}</p>
-
-                {/* Options */}
                 <div style={S.optionsList}>
                   {[
                     { key: "A", val: currentQ.option_a },
@@ -322,35 +311,18 @@ export default function AuthorQuizAttempt() {
                     );
                   })}
                 </div>
-
-                {/* Clear answer */}
                 {answers[currentQ.id] && (
                   <button style={S.clearBtn} onClick={() => setAnswers((prev) => { const n = { ...prev }; delete n[currentQ.id]; return n; })}>
                     Clear Answer
                   </button>
                 )}
-
-                {/* Prev / Next */}
                 <div style={S.navBtns}>
-                  <button
-                    style={{ ...S.prevBtn, opacity: activeQ === 0 ? 0.4 : 1 }}
-                    onClick={() => setActiveQ((p) => Math.max(0, p - 1))}
-                    disabled={activeQ === 0}
-                  >
-                    ← Previous
-                  </button>
-                  <button
-                    style={{ ...S.nextBtn, opacity: activeQ === totalQ - 1 ? 0.4 : 1 }}
-                    onClick={() => setActiveQ((p) => Math.min(totalQ - 1, p + 1))}
-                    disabled={activeQ === totalQ - 1}
-                  >
-                    Next →
-                  </button>
+                  <button style={{ ...S.prevBtn, opacity: activeQ === 0 ? 0.4 : 1 }} onClick={() => setActiveQ((p) => Math.max(0, p - 1))} disabled={activeQ === 0}>← Previous</button>
+                  <button style={{ ...S.nextBtn, opacity: activeQ === totalQ - 1 ? 0.4 : 1 }} onClick={() => setActiveQ((p) => Math.min(totalQ - 1, p + 1))} disabled={activeQ === totalQ - 1}>Next →</button>
                 </div>
               </>
             )}
           </div>
-
         </div>
       </div>
     </>
@@ -360,8 +332,6 @@ export default function AuthorQuizAttempt() {
 const S = {
   page: { minHeight: "100vh", background: "linear-gradient(135deg,#f0f9ff,#f5f3ff,#ecfdf5)" },
   centerMsg: { textAlign: "center", marginTop: "80px", fontSize: "16px", color: "#64748b" },
-
-  // Top bar
   topBar: { background: "#fff", padding: "16px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.06)", flexWrap: "wrap", gap: "12px" },
   topLeft: { display: "flex", alignItems: "center", gap: "16px" },
   exitBtn: { padding: "8px 16px", borderRadius: "20px", border: "1.5px solid #e2e8f0", background: "#fff", color: "#64748b", fontSize: "13px", fontWeight: "600", cursor: "pointer" },
@@ -372,11 +342,7 @@ const S = {
   timerBox: { display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", borderRadius: "12px", border: "2px solid", background: "#fff" },
   timerIcon: { fontSize: "18px" },
   timerText: { fontSize: "22px", fontWeight: "700", fontFamily: "monospace" },
-
-  // Body
   body: { display: "flex", gap: "24px", padding: "24px 40px", maxWidth: "1200px", margin: "0 auto" },
-
-  // Navigator
   navigator: { width: "220px", flexShrink: 0 },
   navTitle: { fontSize: "13px", fontWeight: "700", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "12px" },
   navGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", marginBottom: "20px" },
@@ -387,8 +353,6 @@ const S = {
   progressText: { fontSize: "12px", color: "#64748b", textAlign: "center", margin: 0 },
   submitBtn: { width: "100%", padding: "13px", borderRadius: "12px", border: "none", background: "linear-gradient(135deg,#4f46e5,#7c3aed)", color: "#fff", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginBottom: "10px" },
   unattemptedWarning: { fontSize: "12px", color: "#d97706", textAlign: "center", margin: 0 },
-
-  // Question panel
   questionPanel: { flex: 1, background: "#fff", borderRadius: "16px", padding: "32px", boxShadow: "0 10px 25px rgba(0,0,0,0.06)" },
   qHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" },
   qNum: { fontSize: "13px", fontWeight: "600", color: "#64748b", background: "#f1f5f9", padding: "6px 14px", borderRadius: "20px" },
@@ -402,8 +366,6 @@ const S = {
   navBtns: { display: "flex", justifyContent: "space-between", marginTop: "8px" },
   prevBtn: { padding: "10px 24px", borderRadius: "10px", border: "1.5px solid #e2e8f0", background: "#fff", color: "#475569", fontSize: "14px", fontWeight: "600", cursor: "pointer" },
   nextBtn: { padding: "10px 24px", borderRadius: "10px", border: "none", background: "#4f46e5", color: "#fff", fontSize: "14px", fontWeight: "600", cursor: "pointer" },
-
-  // Result page
   resultPage: { minHeight: "100vh", background: "#f8fafc" },
   resultHero: { padding: "50px 40px", textAlign: "center", color: "#fff" },
   resultEmoji: { fontSize: "52px", marginBottom: "10px" },

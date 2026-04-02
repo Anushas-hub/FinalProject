@@ -141,7 +141,7 @@ function QuizPage() {
 
             {/* Answer review */}
             <div style={S.reviewSection}>
-              <h3 style={S.reviewTitle}>📋 Answer Review</h3>
+              <h3 style={S.reviewTitle}> Answer Review</h3>
               {quiz.questions.map((q, i) => {
                 const userAns = answers[i];
                 const isCorrect = userAns === q.answer;
@@ -175,7 +175,7 @@ function QuizPage() {
                 setCurrentQ(0);
                 if (quiz.time_limit) setTimeLeft(quiz.time_limit * 60);
               }}>
-                🔄 Retry Quiz
+                 Retry Quiz
               </button>
               <button style={S.backBtn2} onClick={() => navigate(-1)}>
                 ← Go Back
@@ -315,7 +315,7 @@ function QuizPage() {
                 }}
                 onClick={() => handleSubmit(false)}
               >
-                🚀 Submit Quiz
+                 Submit Quiz
               </button>
             )}
           </div>

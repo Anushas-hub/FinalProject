@@ -144,7 +144,7 @@ class StudyMaterial(models.Model):
         return self.title
 
 
-# ---------------- 🆕 FOLLOW SYSTEM ----------------
+# ---------------- FOLLOW SYSTEM ----------------
 
 class Follow(models.Model):
     follower = models.ForeignKey(
@@ -165,3 +165,38 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower.username} follows {self.author.username}"
+
+
+# ---------------- 🆕 AUTHOR MATERIAL VIEW TRACKING ----------------
+
+class AuthorMaterialView(models.Model):
+    """Tracks when a student views an author's study material"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author_material_views")
+    material_id = models.IntegerField()          # AuthorStudyMaterial ID
+    material_title = models.CharField(max_length=200)
+    viewed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "material_id")   # one record per student per material
+        ordering = ["-viewed_at"]
+
+    def __str__(self):
+        return f"{self.user.username} viewed author material {self.material_id}"
+
+
+# ---------------- 🆕 AUTHOR QUIZ ATTEMPT TRACKING ----------------
+
+class AuthorQuizAttempt(models.Model):
+    """Tracks when a student attempts an author's quiz"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="author_quiz_attempts")
+    quiz_id = models.IntegerField()              # AuthorQuiz ID
+    quiz_title = models.CharField(max_length=200)
+    score = models.IntegerField(default=0)
+    total_marks = models.IntegerField(default=0)
+    attempted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-attempted_at"]
+
+    def __str__(self):
+        return f"{self.user.username} attempted author quiz {self.quiz_id}"

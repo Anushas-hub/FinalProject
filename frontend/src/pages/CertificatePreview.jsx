@@ -63,7 +63,7 @@ export default function CertificatePreview() {
             ← Back
           </button>
           <button style={styles.printBtn} onClick={handlePrint}>
-            🖨️ Print / Download PDF
+            ️ Print / Download PDF
           </button>
         </div>
 

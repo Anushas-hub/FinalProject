@@ -127,23 +127,23 @@ class AdminNotificationAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
 
     fieldsets = (
-        ("📋 Notification Content", {
+        (" Notification Content", {
             "fields": ("notification_type", "title", "message"),
         }),
-        ("🎯 Target Author", {
+        (" Target Author", {
             "description": (
                 "⚠️ Leave 'Recipient' BLANK to broadcast to ALL authors. "
                 "Select a specific author to send only to them."
             ),
             "fields": ("recipient",),
         }),
-        ("📌 Status", {
+        (" Status", {
             "fields": ("is_read",),
         }),
     )
 
     def recipient_display(self, obj):
-        return obj.recipient.username if obj.recipient else "📢 ALL AUTHORS"
+        return obj.recipient.username if obj.recipient else " ALL AUTHORS"
     recipient_display.short_description = "Recipient"
 
     def save_model(self, request, obj, form, change):

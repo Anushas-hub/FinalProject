@@ -21,7 +21,7 @@ export default function Connect() {
 
       <div style={styles.card}>
 
-        <h3>📧 Email</h3>
+        <h3> Email</h3>
 
         <p>
         <a
@@ -34,14 +34,14 @@ export default function Connect() {
 </a>
         </p>
 
-        <h3>🤝 Support</h3>
+        <h3> Support</h3>
 
         <p>
           If you face any issues, have improvement ideas, or want to collaborate
           with us as an author, feel free to reach out.
         </p>
 
-        <h3>📚 Our Promise</h3>
+        <h3> Our Promise</h3>
 
         <p>
           We aim to provide authentic, syllabus-aligned, and student-friendly

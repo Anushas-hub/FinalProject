@@ -23,12 +23,12 @@ ChartJS.register(
 );
 
 const STAT_CARDS = [
-  { key: "materials_uploaded",  label: "Materials Uploaded",  icon: "📁", color: "#4f46e5" },
-  { key: "quizzes_created",     label: "Quizzes Created",     icon: "📝", color: "#0891b2" },
-  { key: "questions_received",  label: "Q&A Received",        icon: "💬", color: "#7c3aed" },
-  { key: "peer_comments",       label: "Peer Notes",          icon: "📓", color: "#059669" },
-  { key: "followers_count",     label: "Followers",           icon: "👥", color: "#d97706" },
-  { key: "engaged_students",    label: "Engaged Students",    icon: "🎓", color: "#dc2626" },
+  { key: "materials_uploaded",  label: "Materials Uploaded",  icon: "", color: "#4f46e5" },
+  { key: "quizzes_created",     label: "Quizzes Created",     icon: "", color: "#0891b2" },
+  { key: "questions_received",  label: "Q&A Received",        icon: "", color: "#7c3aed" },
+  { key: "peer_comments",       label: "Peer Notes",          icon: "", color: "#059669" },
+  { key: "followers_count",     label: "Followers",           icon: "", color: "#d97706" },
+  { key: "engaged_students",    label: "Engaged Students",    icon: "", color: "#dc2626" },
 ];
 
 export default function Leaderboard() {
@@ -147,7 +147,7 @@ export default function Leaderboard() {
       {/* ── HEADER ── */}
       <div className="lb-header">
         <div>
-          <h2 className="lb-title">📊 Author Analytics</h2>
+          <h2 className="lb-title"> Author Analytics</h2>
           <p className="lb-subtitle">Your complete activity overview</p>
         </div>
         <div className="lb-badge">@{username}</div>
@@ -172,14 +172,14 @@ export default function Leaderboard() {
 
       {/* ── BAR CHART ── */}
       <div className="lb-chart-box">
-        <h3 className="lb-chart-title">📊 Activity Overview</h3>
+        <h3 className="lb-chart-title"> Activity Overview</h3>
         <p className="lb-chart-sub">All-time totals across your content</p>
         <Bar data={barData} options={barOptions} />
       </div>
 
       {/* ── LINE CHART ── */}
       <div className="lb-chart-box">
-        <h3 className="lb-chart-title">📈 Growth Trend (Last 6 Months)</h3>
+        <h3 className="lb-chart-title"> Growth Trend (Last 6 Months)</h3>
         <p className="lb-chart-sub">Monthly uploads vs Q&A activity</p>
         <Line data={lineData} options={lineOptions} />
       </div>

@@ -187,9 +187,9 @@ export default function CreateQuiz() {
                 setQuizData({ ...quizData, difficulty: e.target.value })
               }
             >
-              <option value="easy">Easy 🟢</option>
-              <option value="medium">Medium 🟡</option>
-              <option value="hard">Hard 🔴</option>
+              <option value="easy">Easy </option>
+              <option value="medium">Medium </option>
+              <option value="hard">Hard </option>
             </select>
           </div>
 
@@ -269,7 +269,7 @@ export default function CreateQuiz() {
           const sel = materials.find((m) => m.id == quizData.material_id);
           return sel ? (
             <div style={S.materialPreview}>
-              <span style={S.previewIcon}>📖</span>
+              <span style={S.previewIcon}></span>
               <div>
                 <div style={S.previewTitle}>{sel.title}</div>
                 <div style={S.previewSub}>
@@ -385,11 +385,11 @@ export default function CreateQuiz() {
       {/* ── QUIZ SUMMARY ── */}
       {questions.length > 0 && (
         <div style={S.summaryBox}>
-          <span>📊 <strong>{questions.length}</strong> questions</span>
+          <span> <strong>{questions.length}</strong> questions</span>
           <span>⏱ <strong>{quizData.time_limit} min</strong></span>
-          <span>🎯 <strong>{quizData.difficulty}</strong></span>
+          <span> <strong>{quizData.difficulty}</strong></span>
           <span>
-            💯 Total:{" "}
+             Total:{" "}
             <strong>
               {questions.reduce((sum, q) => sum + (q.marks || 1), 0)} marks
             </strong>
@@ -403,7 +403,7 @@ export default function CreateQuiz() {
         onClick={handleSubmit}
         disabled={loading}
       >
-        {loading ? "⏳ Creating Quiz..." : "🚀 Create Quiz"}
+        {loading ? "⏳ Creating Quiz..." : " Create Quiz"}
       </button>
     </div>
   );

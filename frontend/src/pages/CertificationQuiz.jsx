@@ -150,13 +150,13 @@ export default function CertificationQuiz() {
 
             <p style={styles.passNote}>
               {passed
-                ? `🎉 You passed! Minimum required: ${result.pass_percentage}%`
+                ? ` You passed! Minimum required: ${result.pass_percentage}%`
                 : `❌ Minimum required: ${result.pass_percentage}%. Try again!`}
             </p>
 
             {result.certificate_unlocked && (
               <div style={styles.certUnlockedBanner}>
-                🏆 Course progress: {result.course_progress}% — Certificate unlocked!
+                 Course progress: {result.course_progress}% — Certificate unlocked!
               </div>
             )}
 
@@ -178,7 +178,7 @@ export default function CertificationQuiz() {
                     setTimeLeft((quiz.questions?.length || 5) * 120);
                   }}
                 >
-                  🔄 Retry Quiz
+                   Retry Quiz
                 </button>
               )}
             </div>

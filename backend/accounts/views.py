@@ -11,6 +11,7 @@ from .models import AuthorProfile
 from django.core.files.storage import default_storage
 from .models import StudyMaterial
 from .models import Follow
+from .models import AuthorMaterialView, AuthorQuizAttempt  # 🆕
 
 User = get_user_model()
 
@@ -19,7 +20,6 @@ User = get_user_model()
 
 @api_view(['POST'])
 def signup(request):
-
     username = request.data.get('username')
     email = request.data.get('email')
     password = request.data.get('password')
@@ -53,7 +53,6 @@ def signup(request):
 
 @api_view(['POST'])
 def login_view(request):
-
     username = request.data.get('username')
     password = request.data.get('password')
 
@@ -76,18 +75,14 @@ def login_view(request):
 
 @api_view(['GET'])
 def get_subjects(request):
-
     subjects = Subject.objects.all()
-
     data = []
-
     for subject in subjects:
         data.append({
             "id": subject.id,
             "title": subject.title,
             "description": subject.description
         })
-
     return Response(data)
 
 
@@ -95,11 +90,8 @@ def get_subjects(request):
 
 @api_view(['GET'])
 def get_modules(request, subject_id):
-
     modules = Module.objects.filter(subject_id=subject_id)
-
     data = []
-
     for module in modules:
         data.append({
             "id": module.id,
@@ -107,7 +99,6 @@ def get_modules(request, subject_id):
             "content": module.content,
             "subject_title": module.subject.title
         })
-
     return Response(data)
 
 
@@ -115,17 +106,13 @@ def get_modules(request, subject_id):
 
 @api_view(['GET'])
 def get_quizzes(request, module_id):
-
     quizzes = Quiz.objects.filter(module_id=module_id)
-
     data = []
-
     for quiz in quizzes:
         data.append({
             "id": quiz.id,
             "title": quiz.title
         })
-
     return Response(data)
 
 
@@ -133,7 +120,6 @@ def get_quizzes(request, module_id):
 
 @api_view(['GET'])
 def get_quiz(request, id):
-
     quiz = Quiz.objects.get(id=id)
     questions = Question.objects.filter(quiz=quiz)
 
@@ -147,28 +133,21 @@ def get_quiz(request, id):
         data["questions"].append({
             "id": q.id,
             "question": q.question,
-            "options": [
-                q.option1,
-                q.option2,
-                q.option3,
-                q.option4
-            ],
+            "options": [q.option1, q.option2, q.option3, q.option4],
             "answer": q.correct_answer
         })
 
     return Response(data)
 
 
-# ---------------- SAVE VIEWED TOPIC ----------------
+# ---------------- SAVE VIEWED TOPIC (Admin material) ----------------
 
 @api_view(['POST'])
 def save_viewed_topic(request):
-
     username = request.data.get("username")
     subject_id = request.data.get("subject_id")
 
     try:
-
         user = User.objects.get(username=username)
         subject = Subject.objects.get(id=subject_id)
 
@@ -187,41 +166,31 @@ def save_viewed_topic(request):
 
 @api_view(['GET'])
 def get_viewed_topics(request, username):
-
     try:
-
         user = User.objects.get(username=username)
-
         history = ViewedTopic.objects.filter(user=user)
-
         data = []
-
         for item in history:
-
             data.append({
                 "subject_id": item.subject.id,
                 "title": item.subject.title,
                 "viewed_at": item.viewed_at
             })
-
         return Response(data)
-
     except:
         return Response([])
 
 
-# ---------------- SAVE QUIZ ATTEMPT ----------------
+# ---------------- SAVE QUIZ ATTEMPT (Admin quiz) ----------------
 
 @api_view(['POST'])
 def save_quiz_attempt(request):
-
     username = request.data.get("username")
     quiz_id = request.data.get("quiz_id")
     score = request.data.get("score")
     total = request.data.get("total")
 
     try:
-
         user = User.objects.get(username=username)
         quiz = Quiz.objects.get(id=quiz_id)
 
@@ -242,71 +211,199 @@ def save_quiz_attempt(request):
 
 @api_view(['GET'])
 def get_attempted_quizzes(request, username):
-
     try:
-
         user = User.objects.get(username=username)
-
         attempts = QuizAttempt.objects.filter(user=user)
-
         data = []
-
         for a in attempts:
-
             data.append({
-
                 "quiz_title": a.quiz.title,
                 "subject_title": a.quiz.module.subject.title,
                 "subject_id": a.quiz.module.subject.id,
-
                 "score": a.score,
                 "total": a.total_questions,
-
                 "attempted_at": a.attempted_at
-
             })
-
         return Response(data)
-
     except:
         return Response([])
 
 
-# ---------------- STUDENT ANALYTICS ----------------
+# ---------------- 🆕 SAVE AUTHOR MATERIAL VIEW ----------------
+
+@api_view(['POST'])
+def save_author_material_view(request):
+    """
+    Call this when student opens/views any author study material.
+    Tracks unique views per student per material.
+    """
+    username = request.data.get("username")
+    material_id = request.data.get("material_id")
+    material_title = request.data.get("material_title", "")
+
+    try:
+        user = User.objects.get(username=username)
+
+        AuthorMaterialView.objects.update_or_create(
+            user=user,
+            material_id=material_id,
+            defaults={"material_title": material_title}
+        )
+
+        return Response({"message": "Author material view saved"})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+# ---------------- 🆕 SAVE AUTHOR QUIZ ATTEMPT ----------------
+
+@api_view(['POST'])
+def save_author_quiz_attempt(request):
+    """
+    Call this when student submits an author quiz.
+    Saves every attempt with score.
+    """
+    username = request.data.get("username")
+    quiz_id = request.data.get("quiz_id")
+    quiz_title = request.data.get("quiz_title", "")
+    score = request.data.get("score", 0)
+    total_marks = request.data.get("total_marks", 0)
+
+    try:
+        user = User.objects.get(username=username)
+
+        AuthorQuizAttempt.objects.create(
+            user=user,
+            quiz_id=quiz_id,
+            quiz_title=quiz_title,
+            score=score,
+            total_marks=total_marks
+        )
+
+        return Response({"message": "Author quiz attempt saved"})
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+# ---------------- 🆕 UPDATED STUDENT ANALYTICS ----------------
 
 @api_view(['GET'])
 def student_analytics(request, username):
-
+    """
+    Now counts BOTH admin content AND author content.
+    - topics_viewed     = admin subjects viewed + author materials viewed
+    - quizzes_attempted = admin quizzes + author quizzes
+    - certifications    = course completions
+    """
     try:
-
         user = User.objects.get(username=username)
 
-        viewed_count = ViewedTopic.objects.filter(user=user).count()
-        quiz_count = QuizAttempt.objects.filter(user=user).count()
+        # Admin content counts
+        admin_topics = ViewedTopic.objects.filter(user=user).count()
+        admin_quizzes = QuizAttempt.objects.filter(user=user).count()
 
-        certification_count = 0
+        # Author content counts
+        author_topics = AuthorMaterialView.objects.filter(user=user).count()
+        author_quizzes = AuthorQuizAttempt.objects.filter(user=user).count()
+
+        # Certifications — import here to avoid circular import
+        try:
+            from courses.models import CourseCompletion
+            certification_count = CourseCompletion.objects.filter(user=user).count()
+        except Exception:
+            certification_count = 0
 
         data = {
-            "topics_viewed": viewed_count,
-            "quizzes_attempted": quiz_count,
-            "certifications": certification_count
+            "topics_viewed": admin_topics + author_topics,
+            "quizzes_attempted": admin_quizzes + author_quizzes,
+            "certifications": certification_count,
+
+            # breakdown for detailed view (optional use in frontend)
+            "breakdown": {
+                "admin_topics": admin_topics,
+                "author_topics": author_topics,
+                "admin_quizzes": admin_quizzes,
+                "author_quizzes": author_quizzes,
+            }
         }
 
         return Response(data)
 
-    except:
+    except Exception:
         return Response({
             "topics_viewed": 0,
             "quizzes_attempted": 0,
-            "certifications": 0
+            "certifications": 0,
+            "breakdown": {
+                "admin_topics": 0,
+                "author_topics": 0,
+                "admin_quizzes": 0,
+                "author_quizzes": 0,
+            }
         })
+
+
+# ---------------- 🆕 STUDENT LEADERBOARD ----------------
+
+@api_view(['GET'])
+def student_leaderboard(request):
+    """
+    Returns top students ranked by:
+    score = (topics_viewed * 1) + (quizzes_attempted * 2) + (certifications * 5)
+    """
+    try:
+        students = User.objects.filter(role="student")
+
+        try:
+            from courses.models import CourseCompletion
+        except Exception:
+            CourseCompletion = None
+
+        leaderboard = []
+
+        for student in students:
+            admin_topics = ViewedTopic.objects.filter(user=student).count()
+            author_topics = AuthorMaterialView.objects.filter(user=student).count()
+            admin_quizzes = QuizAttempt.objects.filter(user=student).count()
+            author_quizzes = AuthorQuizAttempt.objects.filter(user=student).count()
+
+            certs = 0
+            if CourseCompletion:
+                certs = CourseCompletion.objects.filter(user=student).count()
+
+            total_topics = admin_topics + author_topics
+            total_quizzes = admin_quizzes + author_quizzes
+
+            # Scoring formula
+            score = (total_topics * 1) + (total_quizzes * 2) + (certs * 5)
+
+            leaderboard.append({
+                "username": student.username,
+                "topics_viewed": total_topics,
+                "quizzes_attempted": total_quizzes,
+                "certifications": certs,
+                "score": score,
+            })
+
+        # Sort by score descending
+        leaderboard.sort(key=lambda x: x["score"], reverse=True)
+
+        # Add rank
+        for i, entry in enumerate(leaderboard):
+            entry["rank"] = i + 1
+
+        return Response(leaderboard)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
 
 
 @csrf_exempt
 def submit_feedback(request):
     if request.method == "POST":
         data = json.loads(request.body)
-
         username = data.get("username", "")
         role = data.get("role", "")
         message = data.get("message", "")
@@ -326,11 +423,8 @@ def submit_feedback(request):
 
 @api_view(['GET'])
 def get_author_profile(request, username):
-
     try:
-
         user = User.objects.get(username=username)
-
         profile, created = AuthorProfile.objects.get_or_create(user=user)
 
         image_url = None
@@ -359,13 +453,10 @@ def get_author_profile(request, username):
 
 @api_view(['POST'])
 def save_author_profile(request):
-
     username = request.data.get("username")
 
     try:
-
         user = User.objects.get(username=username)
-
         profile, created = AuthorProfile.objects.get_or_create(user=user)
 
         profile.name = request.data.get("name", "")
@@ -387,7 +478,6 @@ def save_author_profile(request):
 
 @api_view(['POST'])
 def delete_author_image(request):
-
     username = request.data.get("username")
 
     try:
@@ -409,17 +499,14 @@ def delete_author_image(request):
 
 @api_view(['POST'])
 def upload_study_material(request):
-
     try:
         username = request.data.get("username")
-
         user = User.objects.get(username=username)
 
         title = request.data.get("title")
         subject = request.data.get("subject")
         description = request.data.get("description")
         content = request.data.get("content")
-
         file = request.FILES.get("file")
 
         StudyMaterial.objects.create(
@@ -437,11 +524,10 @@ def upload_study_material(request):
         return Response({"error": str(e)}, status=400)
 
 
-# ==================== 🆕 FOLLOW SYSTEM ====================
+# ---------------- FOLLOW SYSTEM ----------------
 
 @api_view(['POST'])
 def follow_author(request):
-    """Student follows an author"""
     try:
         follower_username = request.data.get("follower")
         author_username = request.data.get("author")
@@ -473,7 +559,6 @@ def follow_author(request):
 
 @api_view(['POST'])
 def unfollow_author(request):
-    """Student unfollows an author"""
     try:
         follower_username = request.data.get("follower")
         author_username = request.data.get("author")
@@ -493,7 +578,6 @@ def unfollow_author(request):
 
 @api_view(['GET'])
 def check_follow_status(request, follower, author):
-    """Check if student is following an author"""
     try:
         follower_user = User.objects.get(username=follower)
         author_user = User.objects.get(username=author)
@@ -511,10 +595,8 @@ def check_follow_status(request, follower, author):
 
 @api_view(['GET'])
 def get_author_followers(request, username):
-    """Get all followers of an author"""
     try:
         author = User.objects.get(username=username)
-
         followers = Follow.objects.filter(author=author).select_related("follower")
 
         data = []
@@ -536,7 +618,6 @@ def get_author_followers(request, username):
 
 @api_view(['GET'])
 def get_all_authors(request):
-    """Get all authors with follower count - for student search/browse"""
     try:
         authors = User.objects.filter(role="author")
         data = []

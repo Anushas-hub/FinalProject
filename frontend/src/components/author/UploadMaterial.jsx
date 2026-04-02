@@ -20,7 +20,7 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
   const [existingFile, setExistingFile] = useState(null);
   const [removeFile, setRemoveFile] = useState(false);
 
-  // 🔥 PREFILL WHEN EDITING
+  //  PREFILL WHEN EDITING
   useEffect(() => {
     if (editItem) {
       setFormData({
@@ -35,7 +35,7 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
 
       setExistingFile(editItem.file || null);
 
-      // 🔥 AUTO MODE SET
+      //  AUTO MODE SET
       if (editItem.file && editItem.content) {
         setMode("both");
       } else if (editItem.file) {
@@ -87,7 +87,7 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
         data.append("file", formData.file);
       }
 
-      // 🔥 REMOVE FILE FLAG
+      //  REMOVE FILE FLAG
       if (removeFile) {
         data.append("remove_file", "true");
       }
@@ -196,7 +196,7 @@ export default function UploadMaterial({ editItem, onSuccess, onCancel }) {
           </>
         )}
 
-        {/* 🔥 EXISTING FILE SECTION */}
+        {/*  EXISTING FILE SECTION */}
         {existingFile && !removeFile && (
           <div style={styles.fileBox}>
             <p>Existing PDF:</p>

@@ -22,23 +22,23 @@ export default function Home() {
   // ✅ CHATBOT RELOAD ON USER CHANGE (OPTION 3 IMPLEMENTED)
   useEffect(() => {
 
-    // 🔥 destroy old chatbot if exists
+    //  destroy old chatbot if exists
     if (window.chtl) {
       window.chtl.destroy();
     }
 
-    // 🔥 remove old script if exists
+    //  remove old script if exists
     const oldScript = document.getElementById("chtl-script");
     if (oldScript) oldScript.remove();
 
-    // 🔥 config
+    //  config
     const configScript = document.createElement("script");
     configScript.innerHTML = `
       window.chtlConfig = { chatbotId: "6671678674" }
     `;
     document.body.appendChild(configScript);
 
-    // 🔥 load new chatbot
+    //  load new chatbot
     const script = document.createElement("script");
     script.src = "https://chatling.ai/js/embed.js";
     script.async = true;
@@ -50,7 +50,7 @@ export default function Home() {
 
     document.body.appendChild(script);
 
-  }, [user]); // 👈 KEY CHANGE
+  }, [user]); //  KEY CHANGE
 
   // fetch subjects
   useEffect(() => {

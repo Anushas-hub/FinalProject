@@ -201,7 +201,7 @@ export default function AuthorMaterialDetail() {
             {/* ── MATERIAL CONTENT BOX ── */}
             <div style={styles.contentBox}>
               <div style={styles.tagRow}>
-                <span style={styles.tag}>📚 {material.subject}</span>
+                <span style={styles.tag}> {material.subject}</span>
                 <span style={styles.tag}>{material.course?.toUpperCase()}</span>
                 <span style={styles.tag}>{material.semester?.toUpperCase()}</span>
               </div>
@@ -283,7 +283,7 @@ export default function AuthorMaterialDetail() {
                   </div>
 
                   <p style={styles.pdfHint}>
-                    📌 Click <strong>View PDF</strong> to read in a new tab, or <strong>Download</strong> to save it.
+                     Click <strong>View PDF</strong> to read in a new tab, or <strong>Download</strong> to save it.
                   </p>
                 </div>
               )}
@@ -299,7 +299,7 @@ export default function AuthorMaterialDetail() {
                 <div style={styles.quizSectionHeader}>
                   <div style={styles.quizSectionLeft}>
                     <div>
-                      <h3 style={styles.quizSectionTitle}>🧠 Test Your Knowledge</h3>
+                      <h3 style={styles.quizSectionTitle}> Test Your Knowledge</h3>
                       <p style={styles.quizSectionSub}>
                         Quizzes linked to this material — attempt to check your understanding
                       </p>
@@ -321,7 +321,7 @@ export default function AuthorMaterialDetail() {
                       <div key={quiz.id} style={styles.quizCard}>
                         <div style={styles.quizCardTop}>
                           <span style={{ ...styles.diffBadge, background: dc.bg, color: dc.text }}>
-                            {quiz.difficulty === "easy" ? "🟢" : quiz.difficulty === "medium" ? "🟡" : "🔴"}{" "}
+                            {quiz.difficulty === "easy" ? "" : quiz.difficulty === "medium" ? "" : ""}{" "}
                             {quiz.difficulty.charAt(0).toUpperCase() + quiz.difficulty.slice(1)}
                           </span>
                           <span style={styles.timeBadge}>⏱ {quiz.time_limit} min</span>
@@ -370,12 +370,12 @@ export default function AuthorMaterialDetail() {
             <div style={styles.discussBox}>
               <div style={styles.tabRow}>
                 <button style={activeTab === "qa" ? styles.tabActive : styles.tab} onClick={() => setActiveTab("qa")}>
-                  💬 Ask & Discuss
+                   Ask & Discuss
                   {questions.length > 0 && <span style={styles.tabBadge}>{questions.length}</span>}
                 </button>
                 {isAuthor && (
                   <button style={activeTab === "peer" ? styles.tabActive : styles.tab} onClick={() => setActiveTab("peer")}>
-                    🤝 Peer Notes
+                     Peer Notes
                     {peerComments.length > 0 && <span style={styles.tabBadge}>{peerComments.length}</span>}
                   </button>
                 )}
@@ -415,7 +415,7 @@ export default function AuthorMaterialDetail() {
                   )}
                   <div style={{ marginTop: "24px" }}>
                     {questions.length === 0 && (
-                      <p style={styles.emptyMsg}>No questions yet. Be the first to ask! 🙋</p>
+                      <p style={styles.emptyMsg}>No questions yet. Be the first to ask! </p>
                     )}
                     {questions.map((q) => (
                       <QuestionCard
@@ -468,7 +468,7 @@ export default function AuthorMaterialDetail() {
                   </div>
                   <div style={{ marginTop: "24px" }}>
                     {peerComments.length === 0 && (
-                      <p style={styles.emptyMsg}>No peer notes yet. Start the collaboration! 🤝</p>
+                      <p style={styles.emptyMsg}>No peer notes yet. Start the collaboration! </p>
                     )}
                     {peerComments.map((c) => (
                       <div key={c.id} style={styles.peerCard}>

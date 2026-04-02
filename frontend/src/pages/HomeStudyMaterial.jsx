@@ -232,7 +232,7 @@ function HomeStudyMaterial() {
                   {/* Material info */}
                   <h2 style={{ marginTop: "10px" }}>{material.title}</h2>
                   <p style={styles.subjectTag}>
-                    📚 {material.subject} &nbsp;|&nbsp; {material.course?.toUpperCase()} &nbsp;|&nbsp; {material.semester?.toUpperCase()}
+                     {material.subject} &nbsp;|&nbsp; {material.course?.toUpperCase()} &nbsp;|&nbsp; {material.semester?.toUpperCase()}
                   </p>
                   {material.description && (
                     <p style={styles.descText}>{material.description}</p>

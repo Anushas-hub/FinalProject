@@ -149,7 +149,7 @@ export default function Notifications() {
       cardBg: "#fffbeb",
     },
     danger: {
-      icon: "🚫",
+      icon: "",
       label: "Action Required",
       borderColor: "#ef4444",
       bgColor: "#fee2e2",
@@ -206,7 +206,7 @@ export default function Notifications() {
             if (qaData.unread_count > 0) markQARead();
           }}
         >
-          💬 Student Questions
+           Student Questions
           {qaData.unread_count > 0 && (
             <span style={styles.unreadBadge}>{qaData.unread_count}</span>
           )}
@@ -220,7 +220,7 @@ export default function Notifications() {
             if (peerData.unread_count > 0) markPeerRead();
           }}
         >
-          🤝 Peer Notes
+           Peer Notes
           {peerData.unread_count > 0 && (
             <span style={styles.unreadBadge}>{peerData.unread_count}</span>
           )}
@@ -229,7 +229,7 @@ export default function Notifications() {
       </div>
 
       {/* ══════════════════════════════════════════════════
-          🔔 ADMIN MESSAGES TAB
+           ADMIN MESSAGES TAB
       ══════════════════════════════════════════════════ */}
       {activeTab === "admin" && (
         <>
@@ -239,7 +239,7 @@ export default function Notifications() {
 
           {!adminLoading && adminData.notifications?.length === 0 && (
             <div style={styles.emptyCard}>
-              <div style={styles.emptyIcon}>🔔</div>
+              <div style={styles.emptyIcon}></div>
               <p style={styles.emptyTitle}>No admin messages yet</p>
               <p style={styles.emptySubtitle}>
                 Important notices, congratulations and warnings from admin will appear here.
@@ -303,7 +303,7 @@ export default function Notifications() {
                   {/* Footer */}
                   <div style={styles.adminFooter}>
                     <span style={styles.adminFrom}>
-                      📌 From: SmartStudy Admin
+                       From: SmartStudy Admin
                     </span>
                   </div>
                 </div>
@@ -313,7 +313,7 @@ export default function Notifications() {
       )}
 
       {/* ══════════════════════════════════════════════════
-          💬 STUDENT QUESTIONS TAB
+           STUDENT QUESTIONS TAB
       ══════════════════════════════════════════════════ */}
       {activeTab === "qa" && (
         <>
@@ -323,7 +323,7 @@ export default function Notifications() {
 
           {!qaLoading && qaData.questions?.length === 0 && (
             <div style={styles.emptyCard}>
-              <div style={styles.emptyIcon}>💬</div>
+              <div style={styles.emptyIcon}></div>
               <p style={styles.emptyTitle}>No student questions yet</p>
               <p style={styles.emptySubtitle}>
                 When students ask doubts on your materials, they will appear here.
@@ -458,7 +458,7 @@ export default function Notifications() {
       )}
 
       {/* ══════════════════════════════════════════════════
-          🤝 PEER NOTES TAB
+           PEER NOTES TAB
       ══════════════════════════════════════════════════ */}
       {activeTab === "peer" && (
         <>
@@ -468,7 +468,7 @@ export default function Notifications() {
 
           {!peerLoading && peerData.comments?.length === 0 && (
             <div style={styles.emptyCard}>
-              <div style={styles.emptyIcon}>🤝</div>
+              <div style={styles.emptyIcon}></div>
               <p style={styles.emptyTitle}>No peer notes yet</p>
               <p style={styles.emptySubtitle}>
                 When fellow authors leave collaboration notes on your materials,

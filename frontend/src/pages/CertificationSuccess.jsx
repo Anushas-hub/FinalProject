@@ -22,7 +22,7 @@ export default function CertificationSuccess() {
 
           {/* Icon */}
           <div style={styles.iconWrapper}>
-            <span style={styles.icon}>🏆</span>
+            <span style={styles.icon}></span>
           </div>
 
           <h1 style={styles.congrats}>Congratulations!</h1>
@@ -53,7 +53,7 @@ export default function CertificationSuccess() {
                 style={styles.primaryBtn}
                 onClick={() => navigate(`/certificate/${certificate_id}`)}
               >
-                📄 View Certificate
+                 View Certificate
               </button>
             )}
             <button

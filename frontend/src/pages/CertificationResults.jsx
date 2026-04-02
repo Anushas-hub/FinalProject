@@ -213,12 +213,12 @@ export default function CertificationResults() {
                   {/* Stats */}
                   <div style={styles.courseStats}>
                     <span style={styles.stat}>
-                      📚 {course.total_modules || 0} Modules
+                       {course.total_modules || 0} Modules
                     </span>
                     <span style={styles.stat}>
-                      📝 {course.total_quizzes || 0} Quizzes
+                       {course.total_quizzes || 0} Quizzes
                     </span>
-                    <span style={styles.stat}>🏆 Certificate</span>
+                    <span style={styles.stat}> Certificate</span>
                   </div>
 
                   {/* Skills */}

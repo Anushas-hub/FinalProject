@@ -144,7 +144,7 @@ export default function CertificationCourse() {
               >
                 <div style={styles.sidebarItemTop}>
                   <span style={styles.moduleIcon}>
-                    {status === "completed" ? "✅" : status === "partial" ? "🔄" : "📖"}
+                    {status === "completed" ? "✅" : status === "partial" ? "" : ""}
                   </span>
                   <span style={{
                     ...styles.sidebarModuleTitle,
@@ -157,7 +157,7 @@ export default function CertificationCourse() {
 
                 {module.quizzes?.length > 0 && (
                   <div style={styles.sidebarQuizCount}>
-                    📝 {module.quizzes.length} Assessment{module.quizzes.length > 1 ? "s" : ""}
+                     {module.quizzes.length} Assessment{module.quizzes.length > 1 ? "s" : ""}
                     {status === "completed" && (
                       <span style={styles.passedTag}>Passed</span>
                     )}
@@ -178,12 +178,12 @@ export default function CertificationCourse() {
               </button>
             ) : certificateUnlocked ? (
               <button style={styles.certBtn} onClick={handleGetCertificate}>
-                🏆 Get Certificate
+                 Get Certificate
               </button>
             ) : (
               <div style={styles.certLocked}>
                 <p style={styles.certLockedText}>
-                  🔒 Complete 70% assessments to unlock certificate
+                   Complete 70% assessments to unlock certificate
                 </p>
                 <div style={styles.miniProgress}>
                   <div style={{ ...styles.miniProgressFill, width: `${progress}%` }} />
@@ -211,7 +211,7 @@ export default function CertificationCourse() {
 
               {/* Module content */}
               <div style={styles.contentCard}>
-                <h3 style={styles.contentHeading}>📖 Learning Content</h3>
+                <h3 style={styles.contentHeading}> Learning Content</h3>
                 <div style={styles.contentText}>
                   {activeModule.content}
                 </div>
@@ -221,7 +221,7 @@ export default function CertificationCourse() {
               {activeModule.quizzes?.length > 0 && (
                 <div style={styles.assessmentSection}>
                   <h3 style={styles.assessmentHeading}>
-                    📝 Module Assessments
+                     Module Assessments
                   </h3>
                   <p style={styles.assessmentSub}>
                     Complete assessments to track your progress and unlock the certificate.
@@ -234,7 +234,7 @@ export default function CertificationCourse() {
                         <div key={quiz.id} style={styles.quizCard}>
                           <div style={styles.quizCardLeft}>
                             <span style={styles.quizIcon}>
-                              {isPassed ? "✅" : "📋"}
+                              {isPassed ? "✅" : ""}
                             </span>
                             <div>
                               <p style={styles.quizTitle}>{quiz.title}</p>

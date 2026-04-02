@@ -22,6 +22,11 @@ from .views import (
     get_author_followers,
     get_all_authors,
 )
+from .views import (
+    save_author_material_view,   # 🆕
+    save_author_quiz_attempt,    # 🆕
+    student_leaderboard,         # 🆕
+)
 
 urlpatterns = [
     path('upload-material/', upload_study_material),
@@ -50,10 +55,17 @@ urlpatterns = [
 
     path('submit-feedback/', submit_feedback),
 
-    # ========== 🆕 FOLLOW SYSTEM ==========
+    # Follow System
     path('follow/', follow_author),
     path('unfollow/', unfollow_author),
     path('follow-status/<str:follower>/<str:author>/', check_follow_status),
     path('author-followers/<str:username>/', get_author_followers),
     path('all-authors/', get_all_authors),
+
+    # 🆕 Author Content Tracking
+    path('save-author-material-view/', save_author_material_view),
+    path('save-author-quiz-attempt/', save_author_quiz_attempt),
+
+    # 🆕 Student Leaderboard
+    path('student-leaderboard/', student_leaderboard),
 ]

@@ -91,7 +91,7 @@ function TopicContent() {
 
           {/* SIDEBAR */}
           <div style={S.sidebar}>
-            <h3 style={S.sidebarHeading}>📚 Modules</h3>
+            <h3 style={S.sidebarHeading}> Modules</h3>
             {modules.map((module, idx) => (
               <button
                 key={module.id}
@@ -115,7 +115,7 @@ function TopicContent() {
                 {/* Module title */}
                 <div style={S.contentHeader}>
                   <h2 style={S.contentTitle}>{activeModule.title}</h2>
-                  <span style={S.contentBadge}>📖 Reading</span>
+                  <span style={S.contentBadge}> Reading</span>
                 </div>
 
                 {/* Divider */}
@@ -129,7 +129,7 @@ function TopicContent() {
                 {/* ── QUIZ SECTION ── */}
                 <div style={S.quizSection}>
                   <div style={S.quizSectionHeader}>
-                    <h3 style={S.quizSectionTitle}>🧠 Practice Quizzes</h3>
+                    <h3 style={S.quizSectionTitle}> Practice Quizzes</h3>
                     <p style={S.quizSectionSub}>
                       Test your understanding of this module
                     </p>
@@ -141,7 +141,7 @@ function TopicContent() {
 
                   {!quizLoading && quizzes.length === 0 && (
                     <div style={S.noQuizBox}>
-                      <span style={S.noQuizIcon}>📝</span>
+                      <span style={S.noQuizIcon}></span>
                       <p style={S.noQuizText}>
                         No quizzes available for this module yet.
                       </p>
@@ -155,7 +155,7 @@ function TopicContent() {
 
                           {/* Quiz header */}
                           <div style={S.quizCardTop}>
-                            <span style={S.quizIcon}>🎯</span>
+                            <span style={S.quizIcon}></span>
                             <span style={{
                               ...S.diffBadge,
                               ...(quiz.difficulty === "hard"

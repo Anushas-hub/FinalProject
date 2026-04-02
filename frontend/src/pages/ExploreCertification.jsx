@@ -17,7 +17,7 @@ export default function ExploreCertification() {
     <div style={styles.container}>
       <div style={styles.card}>
         <h2 style={styles.title}>
-          Hello, {user} 👋 <br />
+          Hello, {user}  <br />
           What are you opting to learn today?
         </h2>
 

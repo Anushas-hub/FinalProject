@@ -157,7 +157,7 @@ export default function AuthorDashboard() {
 
             {/* Follower count pill (UNCHANGED) */}
             <div style={styles.followerPill}>
-              👥 {followerCount} Followers
+               {followerCount} Followers
             </div>
           </div>
 
@@ -272,7 +272,7 @@ function FollowersSection({ followers, followerCount, loading }) {
         <div style={fStyles.emptyBox}>
           <p style={fStyles.emptyText}>No followers yet.</p>
           <p style={fStyles.emptySubText}>
-            Keep uploading quality materials — students will follow you! 🚀
+            Keep uploading quality materials — students will follow you! 
           </p>
         </div>
       )}
