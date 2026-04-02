@@ -20,9 +20,7 @@ export default function CertificatePreview() {
       .catch(() => setLoading(false));
   }, [id]);
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => window.print();
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -117,44 +115,107 @@ export default function CertificatePreview() {
 
                 {/* LEFT — Signature */}
                 <div style={styles.footerLeft}>
-                  {/* SVG Cursive Signature */}
+
+                  {/* ── CURSIVE SVG SIGNATURE ── */}
                   <svg
-                    width="160"
-                    height="60"
-                    viewBox="0 0 160 60"
-                    style={{ display: "block", margin: "0 auto 4px auto" }}
+                    width="190"
+                    height="65"
+                    viewBox="0 0 190 65"
+                    style={{ display: "block", margin: "0 auto 6px auto" }}
                   >
+                    {/* S */}
                     <path
-                      d="M10,45 C20,10 35,8 45,20 C52,28 48,38 55,32
-                         C62,26 65,15 75,18 C82,20 80,35 88,30
-                         C95,25 98,12 108,16 C116,19 112,38 120,33
-                         C128,28 132,18 142,22 C148,25 146,40 150,38"
-                      fill="none"
-                      stroke="#4f46e5"
-                      strokeWidth="2"
+                      d="M12,18 C8,10 4,14 6,21 C8,28 18,25 18,32 C18,39 8,42 4,37"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    />
+                    {/* m */}
+                    <path
+                      d="M22,38 C22,28 24,20 26,24 C28,28 28,38 30,38 C32,38 32,28 34,24 C36,20 38,28 38,38"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    />
+                    {/* a */}
+                    <path
+                      d="M46,26 C40,20 40,40 46,37 C52,34 50,22 54,26 L54,38"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    />
+                    {/* r */}
+                    <path
+                      d="M58,38 L58,24 C60,18 65,20 65,25"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    />
+                    {/* t */}
+                    <path
+                      d="M71,14 L71,38"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
                       strokeLinecap="round"
-                      strokeLinejoin="round"
                     />
                     <path
-                      d="M30,48 C50,44 80,46 110,44 C125,43 138,45 150,43"
-                      fill="none"
-                      stroke="#4f46e5"
-                      strokeWidth="1.2"
+                      d="M67,24 L75,24"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
                       strokeLinecap="round"
-                      opacity="0.5"
                     />
-                    {/* S of SmartStudy */}
-                    <text
-                      x="12"
-                      y="38"
-                      fontFamily="Dancing Script, Brush Script MT, cursive"
-                      fontSize="22"
-                      fill="#4f46e5"
-                      opacity="0.15"
-                      fontWeight="bold"
-                    >
-                      SmartStudy
-                    </text>
+                    {/* S */}
+                    <path
+                      d="M85,20 C81,13 77,17 79,23 C81,30 90,27 90,34 C90,41 80,43 76,38"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    />
+                    {/* t */}
+                    <path
+                      d="M96,14 L96,38"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M92,24 L100,24"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    {/* u */}
+                    <path
+                      d="M104,22 L104,34 C104,41 113,41 113,34 L113,22"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    />
+                    {/* d */}
+                    <path
+                      d="M124,14 L124,38"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M124,26 C120,20 114,22 114,30 C114,38 120,41 124,36"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    />
+                    {/* y */}
+                    <path
+                      d="M128,22 L134,36"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d="M140,22 L132,46 C130,52 126,52 123,50"
+                      fill="none" stroke="#1e1b4b" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round"
+                    />
+
+                    {/* Underline flourish */}
+                    <path
+                      d="M4,50 C30,44 80,48 124,46 C144,45 162,47 175,45"
+                      fill="none" stroke="#1e1b4b" strokeWidth="1.5"
+                      strokeLinecap="round" opacity="0.5"
+                    />
+                    {/* End curl */}
+                    <path
+                      d="M172,42 C176,44 178,50 174,52"
+                      fill="none" stroke="#1e1b4b" strokeWidth="1.5"
+                      strokeLinecap="round" opacity="0.4"
+                    />
                   </svg>
 
                   <div style={styles.signatureLine} />
@@ -265,35 +326,25 @@ const styles = {
     textAlign: "center",
     padding: "36px 40px 20px 40px",
   },
-  logo: {
-    display: "inline-block",
-    marginBottom: "8px",
-  },
+  logo: { display: "inline-block", marginBottom: "8px" },
   logoText: {
-    fontSize: "32px",
-    fontWeight: "800",
+    fontSize: "32px", fontWeight: "800",
     background: "linear-gradient(135deg,#4f46e5,#7c3aed)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     letterSpacing: "-0.5px",
   },
   issuer: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#94a3b8",
-    textTransform: "uppercase",
-    letterSpacing: "3px",
-    margin: 0,
+    fontSize: "13px", fontWeight: "600",
+    color: "#94a3b8", textTransform: "uppercase",
+    letterSpacing: "3px", margin: 0,
   },
   decorLine: {
-    display: "flex",
-    alignItems: "center",
-    padding: "0 40px",
-    gap: "10px",
+    display: "flex", alignItems: "center",
+    padding: "0 40px", gap: "10px",
   },
   decorDot: {
-    width: "8px", height: "8px",
-    borderRadius: "50%",
+    width: "8px", height: "8px", borderRadius: "50%",
     background: "linear-gradient(135deg,#4f46e5,#7c3aed)",
     flexShrink: 0,
   },
@@ -301,99 +352,63 @@ const styles = {
     flex: 1, height: "1px",
     background: "linear-gradient(90deg,#e0e7ff,#ede9fe,#e0e7ff)",
   },
-  certBody: {
-    textAlign: "center",
-    padding: "36px 60px",
-  },
+  certBody: { textAlign: "center", padding: "36px 60px" },
   presentedTo: {
-    fontSize: "14px",
-    color: "#94a3b8",
-    textTransform: "uppercase",
-    letterSpacing: "2px",
-    fontWeight: "600",
-    margin: "0 0 16px 0",
+    fontSize: "14px", color: "#94a3b8",
+    textTransform: "uppercase", letterSpacing: "2px",
+    fontWeight: "600", margin: "0 0 16px 0",
   },
   studentName: {
-    fontSize: "44px",
-    fontWeight: "800",
-    color: "#1e293b",
-    margin: "0 0 20px 0",
-    fontFamily: "Georgia, serif",
-    lineHeight: "1.1",
+    fontSize: "44px", fontWeight: "800",
+    color: "#1e293b", margin: "0 0 20px 0",
+    fontFamily: "Georgia, serif", lineHeight: "1.1",
   },
   completionText: {
-    fontSize: "14px",
-    color: "#64748b",
-    margin: "0 0 12px 0",
+    fontSize: "14px", color: "#64748b", margin: "0 0 12px 0",
   },
   courseName: {
-    fontSize: "22px",
-    fontWeight: "700",
-    color: "#4f46e5",
-    margin: "0 0 12px 0",
-    lineHeight: "1.3",
+    fontSize: "22px", fontWeight: "700",
+    color: "#4f46e5", margin: "0 0 12px 0", lineHeight: "1.3",
   },
   completionSub: {
-    fontSize: "13px",
-    color: "#94a3b8",
-    fontStyle: "italic",
-    margin: 0,
+    fontSize: "13px", color: "#94a3b8",
+    fontStyle: "italic", margin: 0,
   },
   certFooter: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    padding: "24px 60px 20px 60px",
+    display: "flex", justifyContent: "space-between",
+    alignItems: "flex-end", padding: "24px 60px 20px 60px",
   },
   footerLeft: { textAlign: "center", flex: 1 },
   footerCenter: { textAlign: "center", flex: 0.8 },
   footerRight: { textAlign: "center", flex: 1 },
   signatureLine: {
-    height: "1px",
-    background: "#cbd5e1",
-    marginBottom: "8px",
+    height: "1px", background: "#cbd5e1", marginBottom: "8px",
   },
   signatureLabel: {
-    fontSize: "10px",
-    fontWeight: "700",
-    color: "#94a3b8",
-    textTransform: "uppercase",
-    letterSpacing: "1px",
+    fontSize: "10px", fontWeight: "700", color: "#94a3b8",
+    textTransform: "uppercase", letterSpacing: "1px",
     margin: "0 0 2px 0",
   },
   signatureName: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#1e293b",
-    margin: 0,
+    fontSize: "13px", fontWeight: "600", color: "#1e293b", margin: 0,
   },
   seal: {
-    width: "60px", height: "60px",
-    borderRadius: "50%",
+    width: "60px", height: "60px", borderRadius: "50%",
     background: "linear-gradient(135deg,#4f46e5,#7c3aed)",
-    display: "flex", alignItems: "center",
-    justifyContent: "center",
-    margin: "0 auto 6px auto",
-    border: "3px solid #e0e7ff",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    margin: "0 auto 6px auto", border: "3px solid #e0e7ff",
   },
-  sealText: {
-    color: "#fff", fontSize: "24px", fontWeight: "800",
-  },
+  sealText: { color: "#fff", fontSize: "24px", fontWeight: "800" },
   sealLabel: {
-    fontSize: "10px", fontWeight: "700",
-    color: "#4f46e5", textTransform: "uppercase",
-    letterSpacing: "1px", margin: 0,
+    fontSize: "10px", fontWeight: "700", color: "#4f46e5",
+    textTransform: "uppercase", letterSpacing: "1px", margin: 0,
   },
   certIdRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    padding: "12px 40px",
-    background: "#f8fafc",
+    display: "flex", justifyContent: "space-between",
+    padding: "12px 40px", background: "#f8fafc",
     borderTop: "1px solid #f1f5f9",
   },
-  certIdText: {
-    fontSize: "11px", color: "#94a3b8", margin: 0,
-  },
+  certIdText: { fontSize: "11px", color: "#94a3b8", margin: 0 },
   bottomBar: {
     height: "6px",
     background: "linear-gradient(90deg,#4f46e5,#7c3aed,#06b6d4,#22c55e)",

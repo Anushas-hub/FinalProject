@@ -292,7 +292,7 @@ export default function StudentDashboard() {
             {/* ── ATTEMPTED QUIZZES ── */}
             {activeSection === "quiz" && (
               <>
-                <h2 style={S.heading}> Attempted Quizzes</h2>
+                <h2 style={S.heading}>Attempted Quizzes</h2>
                 {loading && <p style={S.muted}>Loading...</p>}
                 {!loading && attemptedQuizzes.length === 0 && (
                   <div style={S.emptyBox}>
